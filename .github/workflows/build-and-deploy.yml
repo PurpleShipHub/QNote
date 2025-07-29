@@ -18,14 +18,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       
-    - name: Replace token in app.js
+    - name: Create config.js with token
       run: |
-        sed -i "s/let GITHUB_TOKEN = localStorage.getItem('github_token') || '';/let GITHUB_TOKEN = '${{ secrets.GIST_TOKEN }}';/" app.js
+        echo "// Auto-generated file" > config.js
+        echo "window.GIST_TOKEN = '${{ secrets.GIST_TOKEN }}';" >> config.js
         
     - name: Commit and push changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add app.js
-        git commit -m "Auto-inject token [skip ci]" || echo "No changes to commit"
+        git add config.js
+        git commit -m "Update config [skip ci]" || echo "No changes to commit"
         git push

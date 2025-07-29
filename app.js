@@ -1,6 +1,7 @@
 // GitHub Gist 설정
 const GIST_API_URL = 'https://api.github.com/gists';
-let GITHUB_TOKEN = localStorage.getItem('github_token') || '';
+// 토큰은 환경에 따라 자동 설정됨
+let GITHUB_TOKEN = localStorage.getItem('github_token') || window.GIST_TOKEN || '';
 
 // DOM 요소
 const pinDigits = document.querySelectorAll('.pin-digit');
