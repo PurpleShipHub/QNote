@@ -131,9 +131,15 @@ function showNoteSection() {
     noteSection.style.display = 'block';
     noteContent.focus();
     
-    // PIN 섹션 전체를 숨기기
-    if (pinSection) {
-        pinSection.style.display = 'none';
+    // PIN 입력 비활성화
+    pinDigits.forEach(digit => {
+        digit.disabled = true;
+    });
+    
+    // PIN 안내 문구 숨기기
+    const pinInstruction = document.querySelector('.pin-instruction');
+    if (pinInstruction) {
+        pinInstruction.style.display = 'none';
     }
 }
 
@@ -142,11 +148,6 @@ function hideNoteSection() {
     noteSection.style.display = 'none';
     noteContent.value = '';
     
-    // PIN 섹션 다시 표시
-    if (pinSection) {
-        pinSection.style.display = 'block';
-    }
-    
     pinDigits.forEach(digit => {
         digit.value = '';
         digit.classList.remove('filled');
@@ -154,6 +155,12 @@ function hideNoteSection() {
     });
     currentPin = '';
     pinDigits[0].focus();
+    
+    // PIN 안내 문구 다시 표시
+    const pinInstruction = document.querySelector('.pin-instruction');
+    if (pinInstruction) {
+        pinInstruction.style.display = 'block';
+    }
 }
 
 // 취소 버튼
