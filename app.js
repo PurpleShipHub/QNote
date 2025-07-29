@@ -2,7 +2,7 @@
 const GITHUB_API_URL = 'https://api.github.com';
 const NETLIFY_FUNCTION_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:8888/.netlify/functions' 
-    : 'https://YOUR-SITE-NAME.netlify.app/.netlify/functions';
+    : 'https://qnote-backend.netlify.app/.netlify/functions';
 
 // DOM 요소
 const pinDigits = document.querySelectorAll('.pin-digit');
