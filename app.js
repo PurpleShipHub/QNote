@@ -12,6 +12,7 @@ const cancelBtn = document.getElementById('cancelBtn');
 const saveBtn = document.getElementById('saveBtn');
 const copyBtn = document.getElementById('copyBtn');
 const toast = document.getElementById('toast');
+const lastModified = document.getElementById('lastModified');
 
 let currentPin = '';
 
@@ -110,9 +111,19 @@ async function loadNote(pin) {
             const data = await response.json();
             const content = decodeURIComponent(escape(atob(data.content)));
             noteContent.value = content;
+            
+            // 최종 수정시간 표시
+            if (data.commit && data.commit.committer && data.commit.committer.date) {
+                const date = new Date(data.commit.committer.date);
+                const formattedDate = formatDate(date);
+                lastModified.textContent = `최종 수정: ${formattedDate}`;
+            } else {
+                lastModified.textContent = '';
+            }
         } else if (response.status === 404) {
             // 파일이 없으면 빈 노트로 시작
             noteContent.value = '';
+            lastModified.textContent = '새 노트';
         } else {
             throw new Error('Failed to load note');
         }
@@ -121,6 +132,7 @@ async function loadNote(pin) {
     } catch (error) {
         console.error('Error loading note:', error);
         noteContent.value = '';
+        lastModified.textContent = '';
         showNoteSection();
     }
 }
@@ -229,4 +241,30 @@ copyBtn.addEventListener('click', async () => {
 window.addEventListener('load', () => {
     pinDigits[0].focus();
 });
+
+// 날짜 포맷 함수
+function formatDate(date) {
+    const now = new Date();
+    const diff = now - date;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (days > 7) {
+        // 일주일 이상이면 날짜 표시
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}.${month}.${day}`;
+    } else if (days > 0) {
+        return `${days}일 전`;
+    } else if (hours > 0) {
+        return `${hours}시간 전`;
+    } else if (minutes > 0) {
+        return `${minutes}분 전`;
+    } else {
+        return '방금 전';
+    }
+}
 

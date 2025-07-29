@@ -79,6 +79,7 @@ h1 {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     padding: 20px;
     animation: slideIn 0.3s ease-out;
+    position: relative;
 }
 
 @keyframes slideIn {
@@ -174,12 +175,15 @@ button {
         font-size: 20px;
     }
     
+    /* 버튼은 가로로 유지 */
     .button-group {
-        flex-direction: column;
+        flex-direction: row;
+        gap: 5px;
     }
     
     button {
-        width: 100%;
+        padding: 10px 16px;
+        font-size: 14px;
     }
 }
 
@@ -241,4 +245,13 @@ footer a:hover {
 
 .toast.info {
     background-color: #2196F3;
+}
+
+.last-modified {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
 }
