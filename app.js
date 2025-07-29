@@ -11,8 +11,20 @@ const noteContent = document.getElementById('noteContent');
 const cancelBtn = document.getElementById('cancelBtn');
 const saveBtn = document.getElementById('saveBtn');
 const copyBtn = document.getElementById('copyBtn');
+const toast = document.getElementById('toast');
 
 let currentPin = '';
+
+// Toast 메시지 표시
+function showToast(message, type = 'success') {
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
 
 // PIN 입력 이벤트 설정
 pinDigits.forEach((input, index) => {
@@ -149,7 +161,7 @@ saveBtn.addEventListener('click', async () => {
     
     // 10KB 제한 확인
     if (bytes.length > 10240) {
-        alert('노트 크기가 10KB를 초과합니다.');
+        showToast('노트 크기가 10KB를 초과합니다.', 'error');
         return;
     }
     
@@ -167,7 +179,7 @@ saveBtn.addEventListener('click', async () => {
         });
         
         if (response.ok) {
-            alert('노트가 저장되었습니다!');
+            showToast('노트가 저장되었습니다!', 'success');
         } else {
             // Netlify 함수가 없으면 기존 방식으로 폴백
             const issueTitle = `Create note: ${currentPin}`;
@@ -177,7 +189,7 @@ saveBtn.addEventListener('click', async () => {
             const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
             
             window.open(issueUrl, '_blank');
-            alert('GitHub Issue 페이지가 열렸습니다.\n\n"Submit new issue" 버튼을 클릭하면 자동으로 노트가 생성됩니다.');
+            showToast('GitHub Issue 페이지가 열렸습니다. Submit 버튼을 클릭하세요.', 'info');
         }
     } catch (error) {
         console.error('Error saving note:', error);
@@ -189,7 +201,7 @@ saveBtn.addEventListener('click', async () => {
         const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
         
         window.open(issueUrl, '_blank');
-        alert('자동 저장이 실패했습니다. GitHub Issue 페이지에서 수동으로 저장해주세요.');
+        showToast('자동 저장 실패. Issue 페이지에서 수동 저장해주세요.', 'error');
     }
 });
 
@@ -198,18 +210,10 @@ copyBtn.addEventListener('click', async () => {
     try {
         await navigator.clipboard.writeText(noteContent.value);
         
-        // 복사 완료 피드백
-        const originalText = copyBtn.textContent;
-        copyBtn.textContent = '복사됨!';
-        copyBtn.style.backgroundColor = '#4CAF50';
-        
-        setTimeout(() => {
-            copyBtn.textContent = originalText;
-            copyBtn.style.backgroundColor = '#2196F3';
-        }, 2000);
+        showToast('복사되었습니다!', 'success');
     } catch (error) {
         console.error('Error copying text:', error);
-        alert('복사 중 오류가 발생했습니다.');
+        showToast('복사 중 오류가 발생했습니다.', 'error');
     }
 });
 
