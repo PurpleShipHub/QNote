@@ -188,20 +188,6 @@ saveBtn.addEventListener('click', async () => {
         
         if (response.ok) {
             showToast('노트가 저장되었습니다!', 'success');
-            
-            // 저장 후 캐시 문제 해결을 위한 처리
-            setTimeout(() => {
-                // 현재 내용을 로컬에 임시 저장
-                const savedContent = noteContent.value;
-                
-                // 노트 다시 로드하여 캐시 갱신
-                loadNote(currentPin).then(() => {
-                    // 만약 로드 실패시 이전 내용 복원
-                    if (!noteContent.value && savedContent) {
-                        noteContent.value = savedContent;
-                    }
-                });
-            }, 500);
         } else {
             // Netlify 함수가 없으면 기존 방식으로 폴백
             const issueTitle = `Create note: ${currentPin}`;
@@ -244,28 +230,3 @@ window.addEventListener('load', () => {
     pinDigits[0].focus();
 });
 
-// 페이지 떠날 때 캐시 클리어
-window.addEventListener('beforeunload', () => {
-    // 로컬 스토리지의 임시 데이터 제거
-    if (currentPin) {
-        localStorage.removeItem(`qnote_temp_${currentPin}`);
-    }
-});
-
-// 페이지 가시성 변경 감지 (탭 전환, 최소화 등)
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && currentPin) {
-        // 페이지가 숨겨질 때 현재 내용 임시 저장
-        localStorage.setItem(`qnote_temp_${currentPin}`, noteContent.value);
-    } else if (!document.hidden && currentPin && noteSection.style.display === 'block') {
-        // 페이지가 다시 보일 때 노트 새로고침
-        const tempContent = localStorage.getItem(`qnote_temp_${currentPin}`);
-        loadNote(currentPin).then(() => {
-            // 로드 실패시 임시 저장된 내용 복원
-            if (!noteContent.value && tempContent) {
-                noteContent.value = tempContent;
-            }
-            localStorage.removeItem(`qnote_temp_${currentPin}`);
-        });
-    }
-});
