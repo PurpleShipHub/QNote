@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
     
     // PIN을 경로로 변환
     const path = pin.split('').join('/') + '/Qnote.txt';
-    const apiUrl = `https://api.github.com/repos/r2cuerdame/QNote/contents/${path}`;
+    const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`;
     
     // 기존 파일이 있는지 확인
     let sha = null;

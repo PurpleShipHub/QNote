@@ -94,7 +94,7 @@ pinDigits.forEach((input, index) => {
 // 노트 불러오기
 async function loadNote(pin) {
     const path = getPathFromPin(pin);
-    const url = `${GITHUB_API_URL}/repos/r2cuerdame/QNote/contents/${path}/Qnote.txt`;
+    const url = `${GITHUB_API_URL}/repos/PurpleShipHub/QNote/contents/${path}/Qnote.txt`;
     
     try {
         // 캐시 방지를 위해 timestamp 추가
@@ -201,7 +201,7 @@ saveBtn.addEventListener('click', async () => {
             const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
             const labels = 'qnote,auto-create';
             
-            const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
+            const issueUrl = `https://github.com/PurpleShipHub/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
             
             window.open(issueUrl, '_blank');
             showToast('GitHub Issue 페이지가 열렸습니다. Submit 버튼을 클릭하세요.', 'info');
