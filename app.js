@@ -167,7 +167,7 @@ saveBtn.addEventListener('click', async () => {
         });
         
         if (response.ok) {
-            alert('노트가 저장되었습니다! GitHub Actions가 곧 파일을 생성합니다.');
+            alert('노트가 저장되었습니다!');
         } else {
             // Netlify 함수가 없으면 기존 방식으로 폴백
             const issueTitle = `Create note: ${currentPin}`;

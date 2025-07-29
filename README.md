@@ -8,7 +8,7 @@ GitHub Pages + Netlify Functions를 사용한 공개 노트 시스템입니다.
 - **로그인 없이 자동 저장**
 - 10KB 파일 크기 제한
 - 복사 기능
-- GitHub Actions로 자동 파일 생성
+- 바로 파일 생성/수정 (Issue 거치지 않음)
 
 ## 설정 방법
 
@@ -54,9 +54,7 @@ git push
          ↓
          Netlify Functions (백엔드)
          ↓
-         GitHub API (Issue 생성)
-         ↓
-         GitHub Actions (파일 생성)
+         GitHub API (직접 파일 생성/수정)
 ```
 
 ## 장점
