@@ -96,9 +96,14 @@ async function loadNote(pin) {
     const url = `${GITHUB_API_URL}/repos/r2cuerdame/QNote/contents/${path}/Qnote.txt`;
     
     try {
-        // 캐시 방지를 위해 timestamp 추가
+        // 캐시 방지를 위해 timestamp 추가 및 캐시 제어 헤더
         const response = await fetch(url + '?t=' + Date.now(), {
-            cache: 'no-cache'
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
         });
         
         if (response.ok) {
