@@ -1,7 +1,6 @@
-// GitHub 레포지토리 정보 설정
-const GITHUB_OWNER = 'r2cuerdame'; // GitHub 사용자명
-const GITHUB_REPO = 'QNote'; // 레포지토리 이름
-const GITHUB_TOKEN = ''; // GitHub Personal Access Token (옵션)
+// GitHub Gist 설정
+const GIST_API_URL = 'https://api.github.com/gists';
+let GITHUB_TOKEN = localStorage.getItem('github_token') || '';
 
 // DOM 요소
 const pinDigits = document.querySelectorAll('.pin-digit');
@@ -79,31 +78,45 @@ pinDigits.forEach((input, index) => {
 
 // 노트 불러오기
 async function loadNote(pin) {
-    const path = getPathFromPin(pin);
-    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}/Qnote.txt`;
+    // 토큰 확인
+    if (!GITHUB_TOKEN) {
+        const token = prompt('GitHub Personal Access Token을 입력하세요:\n\n한 번만 입력하면 브라우저에 저장됩니다.\n토큰은 https://github.com/settings/tokens 에서 생성할 수 있습니다.\n\n필요한 권한: gist');
+        if (token) {
+            localStorage.setItem('github_token', token);
+            GITHUB_TOKEN = token;
+        } else {
+            return;
+        }
+    }
     
     try {
-        const response = await fetch(url, {
-            headers: GITHUB_TOKEN ? {
-                'Authorization': `token ${GITHUB_TOKEN}`
-            } : {}
-        });
+        // 해당 PIN의 Gist ID 찾기
+        const gistId = localStorage.getItem(`gist_${pin}`);
         
-        if (response.ok) {
-            const data = await response.json();
-            const content = atob(data.content);
-            noteContent.value = content;
-        } else if (response.status === 404) {
-            // 파일이 없으면 빈 노트로 시작
-            noteContent.value = '';
+        if (gistId) {
+            // 기존 Gist 불러오기
+            const response = await fetch(`${GIST_API_URL}/${gistId}`, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`
+                }
+            });
+            
+            if (response.ok) {
+                const gist = await response.json();
+                noteContent.value = gist.files['note.txt'].content || '';
+            } else {
+                noteContent.value = '';
+            }
         } else {
-            throw new Error('Failed to load note');
+            // 새 노트
+            noteContent.value = '';
         }
         
         showNoteSection();
     } catch (error) {
         console.error('Error loading note:', error);
-        alert('노트를 불러오는 중 오류가 발생했습니다.');
+        noteContent.value = '';
+        showNoteSection();
     }
 }
 
@@ -143,7 +156,7 @@ cancelBtn.addEventListener('click', () => {
 
 // 저장 버튼
 saveBtn.addEventListener('click', async () => {
-    if (!currentPin) return;
+    if (!currentPin || !GITHUB_TOKEN) return;
     
     const content = noteContent.value;
     const encoder = new TextEncoder();
@@ -155,45 +168,67 @@ saveBtn.addEventListener('click', async () => {
         return;
     }
     
-    if (!GITHUB_TOKEN) {
-        alert('GitHub Personal Access Token이 설정되지 않았습니다.\n\nREADME.md의 설정 방법을 확인하세요.');
-        return;
-    }
-    
-    // GitHub Issue 생성
-    const issueTitle = `Create note: ${currentPin}`;
-    const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
-    
     try {
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `token ${GITHUB_TOKEN}`
-            },
-            body: JSON.stringify({
-                title: issueTitle,
-                body: issueBody,
-                labels: ['qnote', 'auto-create']
-            })
-        });
+        const gistId = localStorage.getItem(`gist_${currentPin}`);
         
-        if (response.ok) {
-            alert('저장 요청이 전송되었습니다. GitHub Actions가 파일을 생성합니다.');
-        } else {
-            const errorData = await response.json();
-            console.error('GitHub API Error:', errorData);
-            if (response.status === 401) {
-                alert('GitHub Token이 유효하지 않습니다. Token을 확인해주세요.');
-            } else if (response.status === 404) {
-                alert('레포지토리를 찾을 수 없습니다. 설정을 확인해주세요.');
+        if (gistId) {
+            // 기존 Gist 업데이트
+            const response = await fetch(`${GIST_API_URL}/${gistId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        'note.txt': {
+                            content: content
+                        }
+                    }
+                })
+            });
+            
+            if (response.ok) {
+                alert('노트가 저장되었습니다!');
             } else {
-                alert(`저장 중 오류가 발생했습니다: ${errorData.message || 'Unknown error'}`);
+                throw new Error('Failed to update gist');
+            }
+        } else {
+            // 새 Gist 생성
+            const response = await fetch(GIST_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    description: `QNote - PIN: ${currentPin}`,
+                    public: false,
+                    files: {
+                        'note.txt': {
+                            content: content || ' '
+                        }
+                    }
+                })
+            });
+            
+            if (response.ok) {
+                const gist = await response.json();
+                localStorage.setItem(`gist_${currentPin}`, gist.id);
+                alert('노트가 저장되었습니다!');
+            } else {
+                throw new Error('Failed to create gist');
             }
         }
     } catch (error) {
         console.error('Error saving note:', error);
-        alert('저장 중 네트워크 오류가 발생했습니다.');
+        if (error.message.includes('401')) {
+            alert('토큰이 유효하지 않습니다. 다시 입력해주세요.');
+            localStorage.removeItem('github_token');
+            GITHUB_TOKEN = '';
+        } else {
+            alert('저장 중 오류가 발생했습니다.');
+        }
     }
 });
 
