@@ -116,6 +116,11 @@ function getPathFromPin(pin) {
 function showNoteSection() {
     noteSection.style.display = 'block';
     noteContent.focus();
+    
+    // PIN 입력 비활성화
+    pinDigits.forEach(digit => {
+        digit.disabled = true;
+    });
 }
 
 // 노트 섹션 숨기기
@@ -125,6 +130,7 @@ function hideNoteSection() {
     pinDigits.forEach(digit => {
         digit.value = '';
         digit.classList.remove('filled');
+        digit.disabled = false;  // PIN 입력 다시 활성화
     });
     currentPin = '';
     pinDigits[0].focus();
