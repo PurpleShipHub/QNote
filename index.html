@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QNote</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>QNote</h1>
+        <div class="pin-section">
+            <input type="text" id="pinInput" placeholder="6자리 PIN 입력" maxlength="6" pattern="[0-9]{6}" autocomplete="off">
+        </div>
+        
+        <div class="note-section" id="noteSection" style="display: none;">
+            <textarea id="noteContent" placeholder="노트 내용을 입력하세요..." maxlength="10240"></textarea>
+            <div class="button-group">
+                <button id="cancelBtn">취소</button>
+                <button id="saveBtn">저장</button>
+                <button id="copyBtn">복사</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

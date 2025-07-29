@@ -1,0 +1,79 @@
+name: Create QNote from Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-note:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'qnote')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Extract PIN and content
+      id: extract
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issueBody = context.payload.issue.body;
+          const pinMatch = issueBody.match(/PIN: (\d{6})/);
+          const contentMatch = issueBody.match(/Content:\n```\n([\s\S]*?)\n```/);
+          
+          if (!pinMatch || !contentMatch) {
+            throw new Error('Invalid issue format');
+          }
+          
+          const pin = pinMatch[1];
+          const content = contentMatch[1];
+          
+          // Validate content size (10KB limit)
+          const encoder = new TextEncoder();
+          const bytes = encoder.encode(content);
+          if (bytes.length > 10240) {
+            throw new Error('Content exceeds 10KB limit');
+          }
+          
+          core.setOutput('pin', pin);
+          core.setOutput('content', content);
+          
+    - name: Create directory structure
+      run: |
+        PIN="${{ steps.extract.outputs.pin }}"
+        DIR_PATH=$(echo $PIN | sed 's/\(.\)/\1\//g')
+        mkdir -p $DIR_PATH
+        
+    - name: Create Qnote.txt
+      run: |
+        PIN="${{ steps.extract.outputs.pin }}"
+        CONTENT="${{ steps.extract.outputs.content }}"
+        DIR_PATH=$(echo $PIN | sed 's/\(.\)/\1\//g')
+        echo "$CONTENT" > "${DIR_PATH}Qnote.txt"
+        
+    - name: Commit and push
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "Create note for PIN: ${{ steps.extract.outputs.pin }}"
+        git push
+        
+    - name: Close issue
+      uses: actions/github-script@v6
+      with:
+        script: |
+          await github.rest.issues.update({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            state: 'closed'
+          });
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: '✅ Note created successfully for PIN: ${{ steps.extract.outputs.pin }}'
+          });
