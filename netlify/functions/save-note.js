@@ -46,7 +46,7 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         message: `Update note for PIN: ${pin}`,
-        content: Buffer.from(content, 'utf8').toString('base64'),
+        content: Buffer.from(content).toString('base64'),
         sha: sha // 기존 파일이 있으면 sha 포함
       })
     });

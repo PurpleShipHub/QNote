@@ -100,7 +100,7 @@ async function loadNote(pin) {
         
         if (response.ok) {
             const data = await response.json();
-            const content = atob(data.content);
+            const content = decodeURIComponent(escape(atob(data.content)));
             noteContent.value = content;
         } else if (response.status === 404) {
             // 파일이 없으면 빈 노트로 시작
