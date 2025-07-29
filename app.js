@@ -146,6 +146,12 @@ function showNoteSection() {
     pinDigits.forEach(digit => {
         digit.disabled = true;
     });
+    
+    // PIN 안내 문구 숨기기
+    const pinInstruction = document.querySelector('.pin-instruction');
+    if (pinInstruction) {
+        pinInstruction.style.display = 'none';
+    }
 }
 
 // 노트 섹션 숨기기
@@ -159,6 +165,12 @@ function hideNoteSection() {
     });
     currentPin = '';
     pinDigits[0].focus();
+    
+    // PIN 안내 문구 다시 표시
+    const pinInstruction = document.querySelector('.pin-instruction');
+    if (pinInstruction) {
+        pinInstruction.style.display = 'block';
+    }
 }
 
 // 취소 버튼
