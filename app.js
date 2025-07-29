@@ -155,6 +155,11 @@ saveBtn.addEventListener('click', async () => {
         return;
     }
     
+    if (!GITHUB_TOKEN) {
+        alert('GitHub Personal Access Token이 설정되지 않았습니다.\n\nREADME.md의 설정 방법을 확인하세요.');
+        return;
+    }
+    
     // GitHub Issue 생성
     const issueTitle = `Create note: ${currentPin}`;
     const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
@@ -164,7 +169,7 @@ saveBtn.addEventListener('click', async () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(GITHUB_TOKEN ? { 'Authorization': `token ${GITHUB_TOKEN}` } : {})
+                'Authorization': `token ${GITHUB_TOKEN}`
             },
             body: JSON.stringify({
                 title: issueTitle,
@@ -176,11 +181,19 @@ saveBtn.addEventListener('click', async () => {
         if (response.ok) {
             alert('저장 요청이 전송되었습니다. GitHub Actions가 파일을 생성합니다.');
         } else {
-            throw new Error('Failed to create issue');
+            const errorData = await response.json();
+            console.error('GitHub API Error:', errorData);
+            if (response.status === 401) {
+                alert('GitHub Token이 유효하지 않습니다. Token을 확인해주세요.');
+            } else if (response.status === 404) {
+                alert('레포지토리를 찾을 수 없습니다. 설정을 확인해주세요.');
+            } else {
+                alert(`저장 중 오류가 발생했습니다: ${errorData.message || 'Unknown error'}`);
+            }
         }
     } catch (error) {
         console.error('Error saving note:', error);
-        alert('저장 중 오류가 발생했습니다.');
+        alert('저장 중 네트워크 오류가 발생했습니다.');
     }
 });
 
