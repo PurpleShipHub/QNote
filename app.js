@@ -4,7 +4,7 @@ const GITHUB_REPO = 'QNote'; // 레포지토리 이름
 const GITHUB_TOKEN = ''; // GitHub Personal Access Token (옵션)
 
 // DOM 요소
-const pinInput = document.getElementById('pinInput');
+const pinDigits = document.querySelectorAll('.pin-digit');
 const noteSection = document.getElementById('noteSection');
 const noteContent = document.getElementById('noteContent');
 const cancelBtn = document.getElementById('cancelBtn');
@@ -13,15 +13,68 @@ const copyBtn = document.getElementById('copyBtn');
 
 let currentPin = '';
 
-// PIN 입력 이벤트
-pinInput.addEventListener('input', async (e) => {
-    const value = e.target.value.replace(/[^0-9]/g, '');
-    e.target.value = value;
+// PIN 입력 이벤트 설정
+pinDigits.forEach((input, index) => {
+    input.addEventListener('input', async (e) => {
+        const value = e.target.value.replace(/[^0-9]/g, '');
+        e.target.value = value;
+        
+        if (value) {
+            e.target.classList.add('filled');
+            
+            // 다음 입력 칸으로 자동 이동
+            if (index < pinDigits.length - 1) {
+                pinDigits[index + 1].focus();
+            } else {
+                // 마지막 칸이면 PIN 확인
+                const pin = Array.from(pinDigits).map(digit => digit.value).join('');
+                if (pin.length === 6) {
+                    currentPin = pin;
+                    await loadNote(pin);
+                }
+            }
+        } else {
+            e.target.classList.remove('filled');
+        }
+    });
     
-    if (value.length === 6) {
-        currentPin = value;
-        await loadNote(value);
-    }
+    input.addEventListener('keydown', (e) => {
+        // Backspace 처리
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            pinDigits[index - 1].focus();
+            pinDigits[index - 1].value = '';
+            pinDigits[index - 1].classList.remove('filled');
+        }
+        // Enter 키 처리
+        else if (e.key === 'Enter') {
+            const pin = Array.from(pinDigits).map(digit => digit.value).join('');
+            if (pin.length === 6) {
+                currentPin = pin;
+                loadNote(pin);
+            }
+        }
+    });
+    
+    // 붙여넣기 처리
+    input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
+        const digits = pastedData.slice(0, 6).split('');
+        
+        digits.forEach((digit, i) => {
+            if (i < pinDigits.length) {
+                pinDigits[i].value = digit;
+                pinDigits[i].classList.add('filled');
+            }
+        });
+        
+        if (digits.length === 6) {
+            currentPin = digits.join('');
+            loadNote(currentPin);
+        } else if (digits.length < 6) {
+            pinDigits[Math.min(digits.length, 5)].focus();
+        }
+    });
 });
 
 // 노트 불러오기
@@ -69,9 +122,12 @@ function showNoteSection() {
 function hideNoteSection() {
     noteSection.style.display = 'none';
     noteContent.value = '';
-    pinInput.value = '';
+    pinDigits.forEach(digit => {
+        digit.value = '';
+        digit.classList.remove('filled');
+    });
     currentPin = '';
-    pinInput.focus();
+    pinDigits[0].focus();
 }
 
 // 취소 버튼
@@ -142,14 +198,7 @@ copyBtn.addEventListener('click', async () => {
     }
 });
 
-// Enter 키로 노트 불러오기
-pinInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && pinInput.value.length === 6) {
-        loadNote(pinInput.value);
-    }
-});
-
-// 페이지 로드 시 PIN 입력에 포커스
+// 페이지 로드 시 첫 번째 PIN 입력에 포커스
 window.addEventListener('load', () => {
-    pinInput.focus();
+    pinDigits[0].focus();
 });
