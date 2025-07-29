@@ -1,69 +1,77 @@
 # QNote - 6자리 PIN 기반 노트 시스템
 
-GitHub Pages를 사용한 간단한 공개 노트 시스템입니다.
+GitHub Pages + Netlify Functions를 사용한 공개 노트 시스템입니다.
 
 ## 기능
 
 - 6자리 PIN으로 노트 접근
-- 자동 폴더 구조 생성 (예: /1/2/3/4/5/6/Qnote.txt)
-- GitHub Issues를 통한 자동 파일 생성
+- **로그인 없이 자동 저장**
 - 10KB 파일 크기 제한
 - 복사 기능
+- GitHub Actions로 자동 파일 생성
 
 ## 설정 방법
 
-### 1. GitHub Personal Access Token 생성 (필수)
+### 1. Netlify 배포 (백엔드)
 
-1. GitHub 로그인
-2. Settings → Developer settings → Personal access tokens → Tokens (classic)
-3. "Generate new token" 클릭
-4. 다음 권한 선택:
-   - `repo` (전체 선택)
-   - `workflow`
-5. Token 생성 후 복사
+1. https://app.netlify.com 가입 (무료)
+2. "Import an existing project" 클릭
+3. GitHub 연결 → `QNote` 레포지토리 선택
+4. 환경변수 설정:
+   - Key: `GITHUB_TOKEN`
+   - Value: 아까 만든 GitHub Personal Access Token
+5. "Deploy site" 클릭
+6. 배포 완료 후 사이트 URL 복사 (예: `happy-cat-123456.netlify.app`)
 
-### 2. Token 설정
+### 2. app.js 수정
 
-`app.js` 파일에서 `GITHUB_TOKEN` 값 설정:
-
+`app.js`의 5번째 줄에서 Netlify URL 설정:
 ```javascript
-const GITHUB_TOKEN = 'YOUR_PERSONAL_ACCESS_TOKEN_HERE';
+const NETLIFY_FUNCTION_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8888/.netlify/functions' 
+    : 'https://YOUR-SITE-NAME.netlify.app/.netlify/functions';
 ```
+`YOUR-SITE-NAME`을 실제 Netlify 사이트 이름으로 변경
 
-### 3. GitHub Actions 권한 설정
-
-1. 레포지토리 Settings → Actions → General
-2. "Workflow permissions"에서 "Read and write permissions" 선택
-3. Save
-
-### 4. GitHub Pages 활성화
-
-1. Settings → Pages
-2. Source: "Deploy from a branch" 선택
-3. Branch: "main", 폴더: "/ (root)" 선택
-4. Save
+### 3. 변경사항 푸시
+```bash
+git add .
+git commit -m "Update Netlify URL"
+git push
+```
 
 ## 사용 방법
 
 1. https://r2cuerdame.github.io/QNote/ 접속
 2. 6자리 PIN 입력
 3. 노트 작성/편집
-4. 저장 버튼 클릭 → GitHub Issue 생성 → Actions가 자동으로 파일 생성
+4. 저장 버튼 클릭 → **자동 저장** (로그인 불필요!)
 
-## 주의사항
+## 시스템 구조
 
-- 공개 저장소이므로 민감한 정보는 저장하지 마세요
-- 파일 크기는 10KB로 제한됩니다
-- GitHub API rate limit에 주의하세요 (인증 없이 시간당 60회, 인증 시 5000회)
+```
+사용자 → GitHub Pages (프론트엔드)
+         ↓
+         Netlify Functions (백엔드)
+         ↓
+         GitHub API (Issue 생성)
+         ↓
+         GitHub Actions (파일 생성)
+```
+
+## 장점
+
+- **로그인 불필요**: 누구나 바로 사용 가능
+- **무료**: GitHub Pages + Netlify 모두 무료
+- **안전**: 토큰은 서버에만 저장
+- **간단**: 복잡한 설정 없음
 
 ## 문제 해결
 
-### 404 오류 발생 시
-- GitHub Personal Access Token이 설정되어 있는지 확인
-- Token 권한이 올바른지 확인
-- 레포지토리가 public인지 확인
+### Netlify 함수가 작동하지 않을 때
+- Netlify 대시보드에서 Functions 탭 확인
+- 환경변수 `GITHUB_TOKEN` 설정 확인
+- 함수 로그 확인
 
-### 저장이 안 될 때
-- GitHub Actions가 활성화되어 있는지 확인
-- Workflow permissions가 "Read and write"로 설정되어 있는지 확인
-- Issue가 생성되었는지 확인 (Issues 탭)
+### 기존 방식으로 돌아가기
+Netlify 설정이 어려우면 자동으로 기존 방식(Issue 페이지 열기)으로 작동합니다.

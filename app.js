@@ -1,7 +1,8 @@
-// GitHub Gist 설정
-const GIST_API_URL = 'https://api.github.com/gists';
-// 토큰은 환경에 따라 자동 설정됨
-let GITHUB_TOKEN = localStorage.getItem('github_token') || window.GIST_TOKEN || '';
+// API 설정
+const GITHUB_API_URL = 'https://api.github.com';
+const NETLIFY_FUNCTION_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8888/.netlify/functions' 
+    : 'https://YOUR-SITE-NAME.netlify.app/.netlify/functions';
 
 // DOM 요소
 const pinDigits = document.querySelectorAll('.pin-digit');
@@ -79,38 +80,21 @@ pinDigits.forEach((input, index) => {
 
 // 노트 불러오기
 async function loadNote(pin) {
-    // 토큰 확인
-    if (!GITHUB_TOKEN) {
-        const token = prompt('GitHub Personal Access Token을 입력하세요:\n\n한 번만 입력하면 브라우저에 저장됩니다.\n토큰은 https://github.com/settings/tokens 에서 생성할 수 있습니다.\n\n필요한 권한: gist');
-        if (token) {
-            localStorage.setItem('github_token', token);
-            GITHUB_TOKEN = token;
-        } else {
-            return;
-        }
-    }
+    const path = getPathFromPin(pin);
+    const url = `${GITHUB_API_URL}/repos/r2cuerdame/QNote/contents/${path}/Qnote.txt`;
     
     try {
-        // 해당 PIN의 Gist ID 찾기
-        const gistId = localStorage.getItem(`gist_${pin}`);
+        const response = await fetch(url);
         
-        if (gistId) {
-            // 기존 Gist 불러오기
-            const response = await fetch(`${GIST_API_URL}/${gistId}`, {
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`
-                }
-            });
-            
-            if (response.ok) {
-                const gist = await response.json();
-                noteContent.value = gist.files['note.txt'].content || '';
-            } else {
-                noteContent.value = '';
-            }
-        } else {
-            // 새 노트
+        if (response.ok) {
+            const data = await response.json();
+            const content = atob(data.content);
+            noteContent.value = content;
+        } else if (response.status === 404) {
+            // 파일이 없으면 빈 노트로 시작
             noteContent.value = '';
+        } else {
+            throw new Error('Failed to load note');
         }
         
         showNoteSection();
@@ -157,7 +141,7 @@ cancelBtn.addEventListener('click', () => {
 
 // 저장 버튼
 saveBtn.addEventListener('click', async () => {
-    if (!currentPin || !GITHUB_TOKEN) return;
+    if (!currentPin) return;
     
     const content = noteContent.value;
     const encoder = new TextEncoder();
@@ -170,66 +154,42 @@ saveBtn.addEventListener('click', async () => {
     }
     
     try {
-        const gistId = localStorage.getItem(`gist_${currentPin}`);
+        // Netlify 함수 호출
+        const response = await fetch(`${NETLIFY_FUNCTION_URL}/save-note`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pin: currentPin,
+                content: content
+            })
+        });
         
-        if (gistId) {
-            // 기존 Gist 업데이트
-            const response = await fetch(`${GIST_API_URL}/${gistId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    files: {
-                        'note.txt': {
-                            content: content
-                        }
-                    }
-                })
-            });
-            
-            if (response.ok) {
-                alert('노트가 저장되었습니다!');
-            } else {
-                throw new Error('Failed to update gist');
-            }
+        if (response.ok) {
+            alert('노트가 저장되었습니다! GitHub Actions가 곧 파일을 생성합니다.');
         } else {
-            // 새 Gist 생성
-            const response = await fetch(GIST_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    description: `QNote - PIN: ${currentPin}`,
-                    public: false,
-                    files: {
-                        'note.txt': {
-                            content: content || ' '
-                        }
-                    }
-                })
-            });
+            // Netlify 함수가 없으면 기존 방식으로 폴백
+            const issueTitle = `Create note: ${currentPin}`;
+            const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
+            const labels = 'qnote,auto-create';
             
-            if (response.ok) {
-                const gist = await response.json();
-                localStorage.setItem(`gist_${currentPin}`, gist.id);
-                alert('노트가 저장되었습니다!');
-            } else {
-                throw new Error('Failed to create gist');
-            }
+            const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
+            
+            window.open(issueUrl, '_blank');
+            alert('GitHub Issue 페이지가 열렸습니다.\n\n"Submit new issue" 버튼을 클릭하면 자동으로 노트가 생성됩니다.');
         }
     } catch (error) {
         console.error('Error saving note:', error);
-        if (error.message.includes('401')) {
-            alert('토큰이 유효하지 않습니다. 다시 입력해주세요.');
-            localStorage.removeItem('github_token');
-            GITHUB_TOKEN = '';
-        } else {
-            alert('저장 중 오류가 발생했습니다.');
-        }
+        // 오류 시 기존 방식으로 폴백
+        const issueTitle = `Create note: ${currentPin}`;
+        const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
+        const labels = 'qnote,auto-create';
+        
+        const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
+        
+        window.open(issueUrl, '_blank');
+        alert('자동 저장이 실패했습니다. GitHub Issue 페이지에서 수동으로 저장해주세요.');
     }
 });
 
