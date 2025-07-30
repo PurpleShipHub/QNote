@@ -1,4 +1,3 @@
-123 안녕
-
-하세요 tt
-Hoho
+1. Enter 6-digit PIN to access your note
+2. Write and save your text
+3. Access anywhere with same PIN
