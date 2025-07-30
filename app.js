@@ -217,27 +217,11 @@ saveBtn.addEventListener('click', async () => {
         if (response.ok) {
             showToast('Note saved successfully!', 'success');
         } else {
-            // Netlify 함수가 없으면 기존 방식으로 폴백
-            const issueTitle = `Create note: ${currentPin}`;
-            const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
-            const labels = 'qnote,auto-create';
-            
-            const issueUrl = `https://github.com/PurpleShipHub/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
-            
-            window.open(issueUrl, '_blank');
-            showToast('GitHub Issue page opened. Click the Submit button.', 'info');
+            showToast('Save failed. Netlify function not available.', 'error');
         }
     } catch (error) {
         console.error('Error saving note:', error);
-        // 오류 시 기존 방식으로 폴백
-        const issueTitle = `Create note: ${currentPin}`;
-        const issueBody = `PIN: ${currentPin}\nContent:\n\`\`\`\n${content}\n\`\`\``;
-        const labels = 'qnote,auto-create';
-        
-        const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
-        
-        window.open(issueUrl, '_blank');
-        showToast('Auto save failed. Please save manually on the Issue page.', 'error');
+        showToast('Save failed. Please try again.', 'error');
     }
 });
 
