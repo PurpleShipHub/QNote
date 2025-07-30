@@ -197,7 +197,7 @@ saveBtn.addEventListener('click', async () => {
     
     // 10KB 제한 확인
     if (bytes.length > 10240) {
-        showToast('노트 크기가 10KB를 초과합니다.', 'error');
+        showToast('Note size exceeds 10KB limit.', 'error');
         return;
     }
     
@@ -215,7 +215,7 @@ saveBtn.addEventListener('click', async () => {
         });
         
         if (response.ok) {
-            showToast('노트가 저장되었습니다!', 'success');
+            showToast('Note saved successfully!', 'success');
         } else {
             // Netlify 함수가 없으면 기존 방식으로 폴백
             const issueTitle = `Create note: ${currentPin}`;
@@ -225,7 +225,7 @@ saveBtn.addEventListener('click', async () => {
             const issueUrl = `https://github.com/PurpleShipHub/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
             
             window.open(issueUrl, '_blank');
-            showToast('GitHub Issue 페이지가 열렸습니다. Submit 버튼을 클릭하세요.', 'info');
+            showToast('GitHub Issue page opened. Click the Submit button.', 'info');
         }
     } catch (error) {
         console.error('Error saving note:', error);
@@ -237,7 +237,7 @@ saveBtn.addEventListener('click', async () => {
         const issueUrl = `https://github.com/r2cuerdame/QNote/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent(labels)}`;
         
         window.open(issueUrl, '_blank');
-        showToast('자동 저장 실패. Issue 페이지에서 수동 저장해주세요.', 'error');
+        showToast('Auto save failed. Please save manually on the Issue page.', 'error');
     }
 });
 
@@ -246,10 +246,10 @@ copyBtn.addEventListener('click', async () => {
     try {
         await navigator.clipboard.writeText(noteContent.value);
         
-        showToast('복사되었습니다!', 'success');
+        showToast('Copied!', 'success');
     } catch (error) {
         console.error('Error copying text:', error);
-        showToast('복사 중 오류가 발생했습니다.', 'error');
+        showToast('Copy failed.', 'error');
     }
 });
 
