@@ -1,4 +1,75 @@
-123 안녕
+🇺🇸 English
+1. Enter a 6-digit PIN to access your note
+2. Write and save your text
+3. Access anywhere with the same PIN
 
-하세요 tt
-Hoho
+🇰🇷 한국어 (Korean)
+1. 6자리 PIN을 입력하여 노트에 접근하세요
+2. 내용을 작성하고 저장하세요
+3. 같은 PIN으로 어디서나 접근할 수 있어요
+
+
+🇯🇵 日本語 (Japanese)
+1. 6桁のPINコードを入力してノートにアクセス
+2. テキストを書いて保存
+3. 同じPINでどこからでもアクセス可能
+
+🇨🇳 简体中文 (Simplified Chinese)
+1. 输入6位数PIN码以访问笔记
+2. 编写并保存文本
+3. 使用相同PIN可随时随地访问
+
+🇨🇳 繁體中文 (Traditional Chinese)
+1. 輸入6位數PIN碼以存取筆記
+2. 撰寫並保存內容
+3. 使用相同的PIN隨時隨地存取
+
+🇪🇸 Español (Spanish)
+1. Introduce un PIN de 6 dígitos para acceder a tu nota
+2. Escribe y guarda tu texto
+3. Accede desde cualquier lugar con el mismo PIN
+
+🇫🇷 Français (French)
+1. Entrez un code PIN à 6 chiffres pour accéder à votre note
+2. Écrivez et enregistrez votre texte
+3. Accédez-y partout avec le même code PIN
+
+🇩🇪 Deutsch (German)
+1. Gib eine 6-stellige PIN ein, um deine Notiz zu öffnen
+2. Schreibe und speichere deinen Text
+3. Greife überall mit derselben PIN darauf zu
+
+🇮🇹 Italiano (Italian)
+1. Inserisci un PIN a 6 cifre per accedere alla tua nota
+2. Scrivi e salva il testo
+3. Accedi ovunque con lo stesso PIN
+
+🇵🇹 Português (Portuguese)
+1. Insira um PIN de 6 dígitos para acessar sua nota
+2. Escreva e salve seu texto
+3. Acesse de qualquer lugar com o mesmo PIN
+
+🇷🇺 Русский (Russian)
+1. Введите 6-значный PIN для доступа к заметке
+2. Напишите и сохраните текст
+3. Доступ откуда угодно с тем же PIN-кодом
+
+🇻🇳 Tiếng Việt (Vietnamese)
+1. Nhập mã PIN 6 chữ số để truy cập ghi chú của bạn
+2. Viết và lưu văn bản
+3. Truy cập ở bất cứ đâu bằng cùng mã PIN
+
+🇮🇩 Bahasa Indonesia (Indonesian)
+1. Masukkan PIN 6 digit untuk mengakses catatan
+2. Tulis dan simpan teks
+3. Akses dari mana saja dengan PIN yang sama
+
+🇹🇭 ภาษาไทย (Thai)
+1. ป้อนรหัส PIN 6 หลักเพื่อเข้าถึงบันทึกของคุณ
+2. เขียนและบันทึกข้อความ
+3. เข้าถึงได้จากทุกที่ด้วย PIN เดียวกัน
+
+🇹🇷 Türkçe (Turkish)
+1. Notunuza erişmek için 6 haneli PIN girin
+2. Metninizi yazın ve kaydedin
+3. Aynı PIN ile her yerden erişin
