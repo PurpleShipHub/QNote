@@ -1,6 +1,5 @@
-🔐 Room 3 — The Platform Below
+🔐 The Platform Below
 Difficulty: ★★★☆☆☆
-Code to enter Room 4: 029384
 
 The hallway led to an underground station.
 But there were no trains.
