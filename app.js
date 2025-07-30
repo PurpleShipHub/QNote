@@ -129,6 +129,9 @@ function getPathFromPin(pin) {
 // 노트 섹션 표시
 function showNoteSection() {
     noteSection.style.display = 'block';
+    
+    // 텍스트 영역을 최상단으로 스크롤
+    noteContent.scrollTop = 0;
     noteContent.focus();
     
     // PIN 입력 비활성화
