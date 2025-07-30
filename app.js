@@ -114,10 +114,14 @@ async function loadNote(pin) {
         }
         
         showNoteSection();
+        // 콘텐츠 로드 후 스크롤을 최상단으로
+        noteContent.scrollTop = 0;
     } catch (error) {
         console.error('Error loading note:', error);
         noteContent.value = '';
         showNoteSection();
+        // 콘텐츠 로드 후 스크롤을 최상단으로
+        noteContent.scrollTop = 0;
     }
 }
 
