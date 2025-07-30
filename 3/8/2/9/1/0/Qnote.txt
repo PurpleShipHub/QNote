@@ -1,5 +1,6 @@
-🔐 The Candle That Shouldn’t Burn
+🔐 Room 1 — The Candle That Shouldn’t Burn
 Difficulty: ★☆☆☆☆☆
+Code to enter Room 2: 541276
 
 Congratulations. You did it.
 That was the first thing he heard.
@@ -20,8 +21,7 @@ On the back: a series of etched numbers, rough and deliberate.
 28.09.10
 
 The cake read:
-
-"Happy Birthday, Eli. You are ten now."
+“Happy Birthday, Eli. You are ten now.”
 
 His fingers moved toward the third candle.
 He pressed it down.
@@ -32,7 +32,6 @@ A narrow hallway appeared.
 
 Next to the opening:
 Faint words, carved into metal:
-
 “5:41 PM”
 “House No. 1276”
 
