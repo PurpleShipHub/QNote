@@ -1,5 +1,6 @@
-🔐 The House With the Waiting Window
+🔐 Room 2 — The House With the Waiting Window
 Difficulty: ★★☆☆☆☆
+Code to enter Room 3: 839402
 
 The room resembled a home.
 But it felt like a replica—an echo of something real.
@@ -14,7 +15,6 @@ Sunlight filtered through soft curtains.
 A ghost of warmth clung to the corner.
 
 On the table, a letter:
-
 “Five minutes after four.
 The moment you stopped coming.
 The house at the end.
