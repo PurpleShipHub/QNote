@@ -1,0 +1,8 @@
+# Robots.txt for QNote
+# Allow all web crawlers to access the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://qnote.io/sitemap.xml

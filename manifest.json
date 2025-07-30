@@ -1,0 +1,20 @@
+{
+  "name": "QNote - Quick Ideas. Instant Sharing",
+  "short_name": "QNote",
+  "description": "A simple, secure note-taking app with PIN protection",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#2196F3",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23f0f2f5'/><text x='256' y='400' font-size='400' text-anchor='middle' fill='%23333'>📝</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "ko"
+}
