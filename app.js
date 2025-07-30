@@ -116,12 +116,16 @@ async function loadNote(pin) {
         showNoteSection();
         // 콘텐츠 로드 후 스크롤을 최상단으로
         noteContent.scrollTop = 0;
+        // 캐럿 위치를 맨 앞으로 설정
+        noteContent.setSelectionRange(0, 0);
     } catch (error) {
         console.error('Error loading note:', error);
         noteContent.value = '';
         showNoteSection();
         // 콘텐츠 로드 후 스크롤을 최상단으로
         noteContent.scrollTop = 0;
+        // 캐럿 위치를 맨 앞으로 설정
+        noteContent.setSelectionRange(0, 0);
     }
 }
 
@@ -136,6 +140,8 @@ function showNoteSection() {
     
     // 텍스트 영역을 최상단으로 스크롤
     noteContent.scrollTop = 0;
+    // 캐럿 위치를 맨 앞으로 설정
+    noteContent.setSelectionRange(0, 0);
     noteContent.focus();
     
     // PIN 입력 비활성화
