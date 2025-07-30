@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -25,10 +27,27 @@ body {
 h1 {
     text-align: center;
     color: #1a1a1a;
+    margin-bottom: 10px;
+    font-size: 3.5em;
+    font-weight: 900;
+    letter-spacing: -2px;
+    font-family: 'Playfair Display', serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+}
+
+h1:hover {
+    transform: scale(1.05);
+    color: #2196F3;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 1.1em;
     margin-bottom: 40px;
-    font-size: 3em;
     font-weight: 300;
-    letter-spacing: -1px;
 }
 
 .pin-section {

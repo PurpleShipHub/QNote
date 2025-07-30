@@ -141,6 +141,12 @@ function showNoteSection() {
     if (pinInstruction) {
         pinInstruction.style.display = 'none';
     }
+    
+    // 부제목 숨기기
+    const subtitle = document.querySelector('.subtitle');
+    if (subtitle) {
+        subtitle.style.display = 'none';
+    }
 }
 
 // 노트 섹션 숨기기
@@ -160,6 +166,12 @@ function hideNoteSection() {
     const pinInstruction = document.querySelector('.pin-instruction');
     if (pinInstruction) {
         pinInstruction.style.display = 'block';
+    }
+    
+    // 부제목 다시 표시
+    const subtitle = document.querySelector('.subtitle');
+    if (subtitle) {
+        subtitle.style.display = 'block';
     }
 }
 
@@ -238,5 +250,13 @@ copyBtn.addEventListener('click', async () => {
 window.addEventListener('load', () => {
     pinDigits[0].focus();
 });
+
+// QNote 타이틀 클릭 이벤트
+const qnoteTitle = document.getElementById('qnoteTitle');
+if (qnoteTitle) {
+    qnoteTitle.addEventListener('click', () => {
+        hideNoteSection();
+    });
+}
 
 

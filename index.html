@@ -9,7 +9,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>QNote</h1>
+        <h1 id="qnoteTitle">QNote</h1>
+        <p class="subtitle">"QUICK IDEAS. INSTANT SHARING."</p>
         <div class="pin-section">
             <div class="pin-inputs">
                 <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
@@ -25,7 +26,7 @@
         <div class="note-section" id="noteSection" style="display: none;">
             <textarea id="noteContent" placeholder="Enter your note here..." maxlength="10240"></textarea>
             <div class="button-group">
-                <button id="cancelBtn">Cancel</button>
+                <button id="cancelBtn">Back</button>
                 <button id="saveBtn">Save</button>
                 <button id="copyBtn">Copy</button>
             </div>
