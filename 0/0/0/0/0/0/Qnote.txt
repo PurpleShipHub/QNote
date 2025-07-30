@@ -72,3 +72,5 @@
 1. Notunuza erişmek için 6 haneli PIN girin
 2. Metninizi yazın ve kaydedin
 3. Aynı PIN ile her yerden erişin
+
+- 382910 -
