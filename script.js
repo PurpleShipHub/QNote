@@ -294,71 +294,60 @@ async function loadRoomData(room) {
     const minLoadingTime = 300;
     const loadingStartTime = Date.now();
 
-    // Check if we're in local environment
-    const isLocal = window.location.protocol === 'file:' || 
-                   window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1';
-
     let content = '';
     let success = false;
 
-    // Only try to read from GitHub in deployed environment
-    if (!isLocal) {
-        // Force clear browser cache for this domain (async, don't wait)
-        clearAllCaches();
+    // Always try to read from GitHub (remove local environment restriction)
+    // Force clear browser cache for this domain (async, don't wait)
+    clearAllCaches();
 
+    try {
+        // Create strong cache busting parameters
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(7);
+        const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const nonce = Math.random().toString(36).substring(2, 15);
+        const bust = Math.floor(Math.random() * 9999999999);
+        
+        // 올바른 경로 구조로 수정
+        const digits = room.split('');
+        const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
+        
+        // Only use GitHub API to avoid CORS issues
         try {
-            // Create strong cache busting parameters
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substring(7);
-            const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-            const nonce = Math.random().toString(36).substring(2, 15);
-            const bust = Math.floor(Math.random() * 9999999999);
+            const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}?_=${timestamp}&r=${random}`;
+            console.log('Trying GitHub API:', apiUrl);
             
-            // 올바른 경로 구조로 수정
-            const digits = room.split('');
-            const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
+            const apiResponse = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'QNote-App'
+                },
+                cache: 'no-store'
+            });
             
-            // Only use GitHub API to avoid CORS issues
-            try {
-                const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}?_=${timestamp}&r=${random}`;
-                console.log('Trying GitHub API:', apiUrl);
-                
-                const apiResponse = await fetch(apiUrl, {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'User-Agent': 'QNote-App'
-                    },
-                    cache: 'no-store'
-                });
-                
-                if (apiResponse.ok) {
-                    const data = await apiResponse.json();
-                    content = atob(data.content); // Decode base64
-                    success = true;
-                    console.log(`Successfully loaded from GitHub API, content length: ${content.length}`);
-                } else if (apiResponse.status === 404) {
-                    console.log(`Room ${room} is new (API confirms file doesn't exist)`);
-                    success = false;
-                } else if (apiResponse.status === 403) {
-                    console.log('GitHub API rate limit exceeded, using empty content for new room');
-                    success = false;
-                } else {
-                    console.log(`GitHub API failed with status ${apiResponse.status}`);
-                    success = false;
-                }
-            } catch (apiError) {
-                console.log('GitHub API failed:', apiError.message);
+            if (apiResponse.ok) {
+                const data = await apiResponse.json();
+                content = atob(data.content); // Decode base64
+                success = true;
+                console.log(`Successfully loaded from GitHub API, content length: ${content.length}`);
+            } else if (apiResponse.status === 404) {
+                console.log(`Room ${room} is new (API confirms file doesn't exist)`);
+                success = false;
+            } else if (apiResponse.status === 403) {
+                console.log('GitHub API rate limit exceeded, using empty content for new room');
+                success = false;
+            } else {
+                console.log(`GitHub API failed with status ${apiResponse.status}`);
                 success = false;
             }
-        } catch (error) {
-            console.error('Error loading from GitHub:', error);
-            showToast('Failed to load note from server', 'error');
+        } catch (apiError) {
+            console.log('GitHub API failed:', apiError.message);
+            success = false;
         }
-    } else {
-        // Local environment - skip reading, start with empty content
-        console.log('Local environment detected - starting with empty content. Deploy to Netlify to enable reading existing notes.');
-        success = false;
+    } catch (error) {
+        console.error('Error loading from GitHub:', error);
+        showToast('Failed to load note from server', 'error');
     }
     
     // Force clear editor again before setting new content
@@ -379,11 +368,7 @@ async function loadRoomData(room) {
         lastSaved = new Date().toISOString();
     } else {
         lastSaved = null;
-        if (isLocal) {
-            console.log(`Room ${room} ready for editing (local mode - no reading from GitHub)`);
-        } else {
-            console.log(`Room ${room} is ready for new content`);
-        }
+        console.log(`Room ${room} is ready for new content`);
     }
     
     // Force refresh the UI to ensure no cached states
