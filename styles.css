@@ -192,6 +192,10 @@ body {
     font-size: 1rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
 }
 
 .random-btn:hover {

@@ -276,117 +276,48 @@ async function loadRoomData(room) {
         clearAllCaches();
 
         try {
-            // Load from GitHub repository directly (using existing file structure)
-            
             // Create strong cache busting parameters
             const timestamp = Date.now();
             const random = Math.random().toString(36).substring(7);
             const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
             const nonce = Math.random().toString(36).substring(2, 15);
             const bust = Math.floor(Math.random() * 9999999999);
-            const cacheBuster = `nocache=1&t=${timestamp}&r=${random}&uuid=${uuid}&room=${room}&v=${Math.floor(Math.random() * 999999)}&nonce=${nonce}&bust=${bust}&_=${Date.now()}&force=1`;
             
             // 올바른 경로 구조로 수정
             const digits = room.split('');
             const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
             
-            // 1st attempt: GitHub blob URL (most reliable)
+            // Only use GitHub API to avoid CORS issues
             try {
-                const blobUrl = `https://github.com/PurpleShipHub/QNote/blob/main/${path}?raw=1&${cacheBuster}`;
-                console.log('Trying GitHub blob URL with strong cache buster:', blobUrl);
+                const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}?_=${timestamp}&r=${random}`;
+                console.log('Trying GitHub API:', apiUrl);
                 
-                const blobResponse = await fetch(blobUrl, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    mode: 'cors',
-                    redirect: 'follow',
+                const apiResponse = await fetch(apiUrl, {
                     headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-                        'Pragma': 'no-cache',
-                        'Expires': '0',
-                        'If-None-Match': '*',
-                        'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
-                    }
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'QNote-App'
+                    },
+                    cache: 'no-store'
                 });
                 
-                if (blobResponse.ok) {
-                    content = await blobResponse.text();
+                if (apiResponse.ok) {
+                    const data = await apiResponse.json();
+                    content = atob(data.content); // Decode base64
                     success = true;
-                    console.log(`Successfully loaded from GitHub blob URL, content length: ${content.length}`);
-                } else if (blobResponse.status === 404) {
-                    console.log(`Room ${room} is new (file doesn't exist yet)`);
+                    console.log(`Successfully loaded from GitHub API, content length: ${content.length}`);
+                } else if (apiResponse.status === 404) {
+                    console.log(`Room ${room} is new (API confirms file doesn't exist)`);
+                    success = false;
+                } else if (apiResponse.status === 403) {
+                    console.log('GitHub API rate limit exceeded, using empty content for new room');
                     success = false;
                 } else {
-                    throw new Error(`Blob URL failed with status ${blobResponse.status}`);
+                    console.log(`GitHub API failed with status ${apiResponse.status}`);
+                    success = false;
                 }
-            } catch (blobError) {
-                console.log('Blob URL failed, trying raw URL:', blobError.message);
-                
-                // 2nd attempt: GitHub raw URL
-                try {
-                    const rawUrl = `https://raw.githubusercontent.com/PurpleShipHub/QNote/main/${path}?${cacheBuster}`;
-                    console.log('Trying GitHub raw URL with strong cache buster:', rawUrl);
-                    
-                    const rawResponse = await fetch(rawUrl, {
-                        method: 'GET',
-                        cache: 'no-store',
-                        mode: 'cors',
-                        redirect: 'follow',
-                        headers: {
-                            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-                            'Pragma': 'no-cache',
-                            'Expires': '0',
-                            'If-None-Match': '*',
-                            'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
-                        }
-                    });
-                    
-                    if (rawResponse.ok) {
-                        content = await rawResponse.text();
-                        success = true;
-                        console.log(`Successfully loaded from raw URL, content length: ${content.length}`);
-                    } else if (rawResponse.status === 404) {
-                        console.log(`Room ${room} is new (raw URL confirms file doesn't exist)`);
-                        success = false;
-                    } else {
-                        throw new Error(`Raw URL failed with status ${rawResponse.status}`);
-                    }
-                } catch (rawError) {
-                    console.log('Raw URL also failed, trying GitHub API as last resort:', rawError.message);
-                    
-                    // 3rd attempt: GitHub API (last resort)
-                    try {
-                        const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`;
-                        console.log('Trying GitHub API as last resort:', apiUrl);
-                        
-                        const apiResponse = await fetch(apiUrl, {
-                            headers: {
-                                'Accept': 'application/vnd.github.v3+json',
-                                'User-Agent': 'QNote-App'
-                            },
-                            cache: 'no-store'
-                        });
-                        
-                        if (apiResponse.ok) {
-                            const data = await apiResponse.json();
-                            content = atob(data.content); // Decode base64
-                            success = true;
-                            console.log(`Successfully loaded from GitHub API, content length: ${content.length}`);
-                        } else if (apiResponse.status === 404) {
-                            console.log(`Room ${room} is new (API confirms file doesn't exist)`);
-                            success = false;
-                        } else if (apiResponse.status === 403) {
-                            console.log('GitHub API rate limit exceeded, using empty content for new room');
-                            success = false;
-                        } else {
-                            console.log(`GitHub API failed with status ${apiResponse.status}`);
-                            success = false;
-                        }
-                    } catch (apiError) {
-                        console.log('GitHub API also failed:', apiError.message);
-                        success = false;
-                    }
-                }
+            } catch (apiError) {
+                console.log('GitHub API failed:', apiError.message);
+                success = false;
             }
         } catch (error) {
             console.error('Error loading from GitHub:', error);
@@ -530,6 +461,8 @@ async function saveNote() {
         const apiUrl = isLocal 
             ? 'https://qnote-backend.netlify.app/.netlify/functions/save-note'
             : '/.netlify/functions/save-note';
+        
+        console.log('Save API URL:', apiUrl);
         
         // Call Netlify Function to save to GitHub
         const response = await fetch(apiUrl, {
