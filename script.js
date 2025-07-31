@@ -122,10 +122,35 @@ function initializeApp() {
         noteLogo.addEventListener('click', goToTitleScreen);
     }
 
-    // Check URL for room parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const room = urlParams.get('room');
-    if (room && /^\d{6}$/.test(room)) {
+    // Check URL for room number (multiple formats supported)
+    let room = null;
+    
+    // 1. Check hash format: qnote.io#123456
+    if (window.location.hash) {
+        const hashRoom = window.location.hash.substring(1); // Remove # symbol
+        if (/^\d{6}$/.test(hashRoom)) {
+            room = hashRoom;
+        }
+    }
+    
+    // 2. Check path format: qnote.io/123456
+    if (!room && window.location.pathname && window.location.pathname !== '/') {
+        const pathRoom = window.location.pathname.substring(1); // Remove / symbol
+        if (/^\d{6}$/.test(pathRoom)) {
+            room = pathRoom;
+        }
+    }
+    
+    // 3. Check query format (legacy): qnote.io?room=123456
+    if (!room) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryRoom = urlParams.get('room');
+        if (queryRoom && /^\d{6}$/.test(queryRoom)) {
+            room = queryRoom;
+        }
+    }
+    
+    if (room) {
         enterRoom(room);
     }
 }
@@ -211,9 +236,16 @@ async function enterRoom(room) {
     // Stop placeholder animations
     stopAllPlaceholderAnimations();
     
-    // Update URL
+    // Update URL (prefer hash format for simplicity)
     const url = new URL(window.location);
-    url.searchParams.set('room', room);
+    
+    // Clear all existing room indicators
+    url.searchParams.delete('room');
+    url.hash = '';
+    
+    // Set room as hash
+    url.hash = room;
+    
     window.history.pushState({}, '', url);
     
     // Update PIN display
@@ -417,14 +449,10 @@ function updateSaveStatus() {
             <span>${timeText}</span>
         `;
         saveStatus.classList.add('saved');
+        saveStatus.style.display = 'flex';
     } else {
-        saveStatus.innerHTML = `
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>Never saved</span>
-        `;
+        // Never saved 상태는 숨김
+        saveStatus.style.display = 'none';
         saveStatus.classList.remove('saved');
     }
 }
@@ -556,9 +584,11 @@ function goToTitleScreen() {
         input.placeholder = '';
     });
     
-    // Clear URL
+    // Clear URL (remove all room indicators)
     const url = new URL(window.location);
     url.searchParams.delete('room');
+    url.hash = '';
+    url.pathname = '/';
     window.history.pushState({}, '', url);
     
     // Show title screen
