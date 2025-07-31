@@ -186,39 +186,254 @@ async function enterRoom(room) {
 }
 
 async function loadRoomData(room) {
-    // Clear previous content first
+    // Clear previous content first - force complete reset
     noteEditor.value = '';
+    noteEditor.textContent = '';
+    noteEditor.innerHTML = '';
+    
+    // Force clear any browser form cache/autofill
+    noteEditor.setAttribute('autocomplete', 'off');
+    noteEditor.setAttribute('autocorrect', 'off');
+    noteEditor.setAttribute('autocapitalize', 'off');
+    noteEditor.setAttribute('spellcheck', 'false');
+    
+    // Reset editor state completely
+    if (noteEditor.setSelectionRange) {
+        noteEditor.setSelectionRange(0, 0);
+    }
+    
+    // Force DOM update
+    noteEditor.blur();
+    setTimeout(() => noteEditor.focus(), 10);
+    
     lastSaved = null;
     
-    // Show loading state
+    // Show loading state with specific message
+    const loadingMessage = document.querySelector('.loading-message');
+    loadingMessage.textContent = `Loading room ${room}...`;
     loadingOverlay.classList.add('active');
     
+    // Add minimum loading time for better UX (at least 300ms)
+    const minLoadingTime = 300;
+    const loadingStartTime = Date.now();
+
+    // Force clear browser cache for this domain (async, don't wait)
+    if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+        }).then(() => {
+            console.log('Browser caches cleared in background');
+        }).catch(error => {
+            console.log('Could not clear caches:', error.message);
+        });
+    }
+    
+    // Also try to clear specific GitHub URLs from browser cache
+    const digits = room.split('');
+    const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
+    const urlsToInvalidate = [
+        `https://github.com/PurpleShipHub/QNote/blob/main/${path}`,
+        `https://raw.githubusercontent.com/PurpleShipHub/QNote/main/${path}`,
+        `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`
+    ];
+    
+    // Force reload of specific URLs by making HEAD requests with no-cache
+    urlsToInvalidate.forEach(url => {
+        fetch(url, { 
+            method: 'HEAD', 
+            cache: 'reload',
+            mode: 'no-cors'
+        }).catch(() => {
+            // Ignore errors, this is just cache invalidation
+        });
+    });
+
     try {
-        // Load from GitHub repository directly
-        const digits = room.split('');
-        const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
-        const url = `https://raw.githubusercontent.com/PurpleShipHub/QNote/main/${path}`;
+        // Load from GitHub repository directly (using existing file structure)
         
-        const response = await fetch(url);
+        let content = '';
+        let success = false;
         
-        if (response.ok) {
-            const content = await response.text();
-            noteEditor.value = content;
-            lastSaved = new Date().toISOString(); // We don't have exact time from raw file
-        } else if (response.status === 404) {
-            // Room doesn't exist yet, that's okay
-            console.log(`Room ${room} doesn't exist yet`);
+        // Create strong cache busting parameters
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substring(7);
+        const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const cacheBuster = `nocache=1&t=${timestamp}&r=${random}&uuid=${uuid}&room=${room}&v=${Math.floor(Math.random() * 999999)}`;
+        
+        // Check if we recently saved to this room (within last 30 seconds)
+        const recentlySaved = window.justSavedTimestamp && 
+                             (timestamp - window.justSavedTimestamp < 30000) &&
+                             window.lastSavedRoom === room;
+        
+        if (recentlySaved) {
+            console.log('Recently saved to this room, trying GitHub API first for fresh data');
         }
+        
+        // If recently saved, try GitHub API first for most up-to-date content
+        if (recentlySaved) {
+            try {
+                const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`;
+                console.log('Trying GitHub API first (recently saved):', apiUrl);
+                
+                const apiResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'QNote-App'
+                    },
+                    cache: 'no-store'
+                });
+                
+                if (apiResponse.ok) {
+                    const data = await apiResponse.json();
+                    content = atob(data.content); // Decode base64
+                    success = true;
+                    console.log(`Successfully loaded from GitHub API (fresh), content length: ${content.length}`);
+                } else if (apiResponse.status === 404) {
+                    console.log(`Room ${room} is new (API confirms file doesn't exist)`);
+                    success = false;
+                } else if (apiResponse.status === 403) {
+                    console.log('GitHub API rate limit, falling back to URLs');
+                    // Will fall through to URL attempts
+                } else {
+                    console.log(`GitHub API failed with status ${apiResponse.status}, trying URLs`);
+                    // Will fall through to URL attempts
+                }
+            } catch (apiError) {
+                console.log('GitHub API failed, trying URLs:', apiError.message);
+                // Will fall through to URL attempts
+            }
+        }
+        
+        // If not recently saved OR API failed, use normal URL order
+        if (!success) {
+            // 1st attempt: GitHub blob URL (most reliable)
+            try {
+                const blobUrl = `https://github.com/PurpleShipHub/QNote/blob/main/${path}?raw=1&${cacheBuster}`;
+                console.log('Trying GitHub blob URL with strong cache buster:', blobUrl);
+                
+                const blobResponse = await fetch(blobUrl, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    mode: 'cors',
+                    redirect: 'follow'
+                });
+                
+                if (blobResponse.ok) {
+                    content = await blobResponse.text();
+                    success = true;
+                    console.log(`Successfully loaded from GitHub blob URL, content length: ${content.length}`);
+                } else if (blobResponse.status === 404) {
+                    console.log(`Room ${room} is new (file doesn't exist yet)`);
+                    success = false;
+                } else {
+                    throw new Error(`Blob URL failed with status ${blobResponse.status}`);
+                }
+            } catch (blobError) {
+                console.log('Blob URL failed, trying raw URL:', blobError.message);
+                
+                // 2nd attempt: GitHub raw URL
+                try {
+                    const rawUrl = `https://raw.githubusercontent.com/PurpleShipHub/QNote/main/${path}?${cacheBuster}`;
+                    console.log('Trying GitHub raw URL with strong cache buster:', rawUrl);
+                    
+                    const rawResponse = await fetch(rawUrl, {
+                        method: 'GET',
+                        cache: 'no-store',
+                        mode: 'cors',
+                        redirect: 'follow'
+                    });
+                    
+                    if (rawResponse.ok) {
+                        content = await rawResponse.text();
+                        success = true;
+                        console.log(`Successfully loaded from raw URL, content length: ${content.length}`);
+                    } else if (rawResponse.status === 404) {
+                        console.log(`Room ${room} is new (raw URL confirms file doesn't exist)`);
+                        success = false;
+                    } else {
+                        throw new Error(`Raw URL failed with status ${rawResponse.status}`);
+                    }
+                } catch (rawError) {
+                    console.log('Raw URL also failed, trying GitHub API as last resort:', rawError.message);
+                    
+                    // 3rd attempt: GitHub API (last resort) - no cache buster for API
+                    try {
+                        const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`;
+                        console.log('Trying GitHub API as last resort:', apiUrl);
+                        
+                        const apiResponse = await fetch(apiUrl, {
+                            headers: {
+                                'Accept': 'application/vnd.github.v3+json',
+                                'User-Agent': 'QNote-App'
+                            },
+                            cache: 'no-store'
+                        });
+                        
+                        if (apiResponse.ok) {
+                            const data = await apiResponse.json();
+                            content = atob(data.content); // Decode base64
+                            success = true;
+                            console.log(`Successfully loaded from GitHub API, content length: ${content.length}`);
+                        } else if (apiResponse.status === 404) {
+                            console.log(`Room ${room} is new (API confirms file doesn't exist)`);
+                            success = false;
+                        } else if (apiResponse.status === 403) {
+                            console.log('GitHub API rate limit exceeded, using empty content for new room');
+                            success = false;
+                        } else {
+                            console.log(`GitHub API failed with status ${apiResponse.status}`);
+                            success = false;
+                        }
+                    } catch (apiError) {
+                        console.log('GitHub API also failed:', apiError.message);
+                        success = false;
+                    }
+                }
+            }
+        }
+        
+        // Force clear editor again before setting new content
+        noteEditor.value = '';
+        noteEditor.textContent = '';
+        
+        // Set the editor content (empty for new rooms is normal)
+        console.log(`Setting editor content: "${content}" (length: ${content.length})`);
+        noteEditor.value = content;
+        
+        // Force DOM update
+        noteEditor.dispatchEvent(new Event('input', { bubbles: true }));
+        
+        if (success) {
+            lastSaved = new Date().toISOString();
+        } else {
+            lastSaved = null;
+            console.log(`Room ${room} is ready for new content`);
+        }
+        
+        // Force refresh the UI to ensure no cached states
+        setTimeout(() => {
+            updateCharCount();
+            updateSaveStatus();
+        }, 50);
+        
     } catch (error) {
         console.error('Error loading from GitHub:', error);
         showToast('Failed to load note from server', 'error');
     } finally {
-        // Hide loading state
-        loadingOverlay.classList.remove('active');
+        // Ensure minimum loading time for better UX
+        const loadingElapsed = Date.now() - loadingStartTime;
+        const remainingTime = Math.max(0, minLoadingTime - loadingElapsed);
         
-        // Always update UI
-        updateCharCount();
-        updateSaveStatus();
+        setTimeout(() => {
+            // Hide loading state
+            loadingOverlay.classList.remove('active');
+            
+            // Always update UI
+            updateCharCount();
+            updateSaveStatus();
+        }, remainingTime);
     }
 }
 
@@ -275,6 +490,10 @@ function updateSaveStatus() {
     }
 }
 
+// Track last save time to prevent too frequent saves
+let lastSaveTime = 0;
+const MIN_SAVE_INTERVAL = 2000; // 2 seconds minimum between saves
+
 async function saveNote() {
     const content = noteEditor.value;
     
@@ -283,12 +502,28 @@ async function saveNote() {
         return;
     }
     
+    // Prevent too frequent saves
+    const now = Date.now();
+    if (now - lastSaveTime < MIN_SAVE_INTERVAL) {
+        const remainingTime = Math.ceil((MIN_SAVE_INTERVAL - (now - lastSaveTime)) / 1000);
+        showToast(`Please wait ${remainingTime} more second(s) before saving again`, 'warning');
+        return;
+    }
+    
+    lastSaveTime = now;
+    
     // Show loading overlay
     loadingOverlay.classList.add('active');
     
     try {
+        // Determine the correct API URL based on environment
+        const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiUrl = isLocal 
+            ? 'https://qnote-backend.netlify.app/.netlify/functions/save-note'
+            : '/.netlify/functions/save-note';
+        
         // Call Netlify Function to save to GitHub
-        const response = await fetch('/.netlify/functions/save-note', {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -304,6 +539,14 @@ async function saveNote() {
             lastSaved = result.lastSaved;
             updateSaveStatus();
             showToast('Note saved successfully!', 'success');
+            
+            // Don't reload from server immediately after save - use local content
+            // This prevents issues with GitHub raw URL cache delays
+            console.log('Note saved successfully, keeping current editor content');
+            
+            // Mark that we just saved to avoid unnecessary reloads
+            window.justSavedTimestamp = Date.now();
+            window.lastSavedRoom = currentRoom; // Store the room for recent check
         } else {
             const error = await response.json();
             throw new Error(error.error || 'Failed to save note');
