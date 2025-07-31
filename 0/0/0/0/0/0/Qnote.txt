@@ -1,4 +1,4 @@
-0Welcome to QNote! 📝
+Welcome to QNote! 📝
 
 
 QNote is an open collaborative note-taking platform with Markdown support! Anyone can create and share notes using 6-digit room numbers.
