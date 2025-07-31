@@ -1,0 +1,13 @@
+{
+  "name": "qnote",
+  "version": "1.0.0",
+  "description": "Open Collaborative Notes - Share notes through 6-digit room numbers",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'Open index.html in your browser'"
+  },
+  "keywords": ["notes", "collaborative", "sharing"],
+  "author": "PurpleShip",
+  "license": "MIT",
+  "homepage": "https://github.com/PurpleShipHub/QNote"
+}

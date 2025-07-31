@@ -3,77 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QNote - Quick Ideas. Instant Sharing.</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="QNote - A simple, secure note-taking app with code-based access. Quick ideas, instant sharing. Save and access your notes from anywhere.">
-    <meta name="keywords" content="notes, note-taking, memo, quick notes, secure notes, access code, online notepad">
-    <meta name="author" content="PurpleShip">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://qnote.io/">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://qnote.io/">
-    <meta property="og:title" content="QNote - Quick Ideas. Instant Sharing.">
-    <meta property="og:description" content="A simple, secure note-taking app with code-based access. Save and access your notes from anywhere.">
-    <meta property="og:image" content="https://qnote.io/og-image.png">
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://qnote.io/">
-    <meta property="twitter:title" content="QNote - Quick Ideas. Instant Sharing.">
-    <meta property="twitter:description" content="A simple, secure note-taking app with code-based access. Save and access your notes from anywhere.">
-    <meta property="twitter:image" content="https://qnote.io/og-image.png">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📝</text></svg>">
-    <link rel="manifest" href="/manifest.json">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Google Ads -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2918110527252994"
-     crossorigin="anonymous"></script>
+    <title>QNote - Open Collaborative Notes</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1 id="qnoteTitle">QNote</h1>
-        <p class="subtitle">"QUICK IDEAS. INSTANT SHARING."</p>
-        <div class="pin-section">
-            <div class="pin-inputs">
-                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
-                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
-                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
-                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
-                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
-                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" autocomplete="off">
+    <div id="app">
+        <!-- Title Screen -->
+        <div id="titleScreen" class="screen active">
+            <div class="container">
+                <h1 class="logo">
+                    <span class="logo-q">Q</span><span class="logo-note">Note</span>
+                </h1>
+                <h2 class="tagline">"OPEN COLLABORATIVE NOTES"</h2>
+                
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 11C17.66 11 19 9.66 19 8C19 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11Z" fill="#0066ff"/>
+                                <path d="M8 11C9.66 11 11 9.66 11 8C11 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11Z" fill="#0066ff"/>
+                                <path d="M8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13Z" fill="#0066ff"/>
+                                <path d="M16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z" fill="#0066ff"/>
+                            </svg>
+                        </div>
+                        <h3>Collaborative</h3>
+                        <p>Share notes<br>through 6-digit<br>room numbers</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="#0066ff" stroke-width="2" fill="none"/>
+                                <circle cx="12" cy="12" r="3" fill="#0066ff"/>
+                                <circle cx="12" cy="5" r="2" fill="#0066ff"/>
+                                <circle cx="12" cy="19" r="2" fill="#0066ff"/>
+                                <circle cx="5" cy="12" r="2" fill="#0066ff"/>
+                                <circle cx="19" cy="12" r="2" fill="#0066ff"/>
+                            </svg>
+                        </div>
+                        <h3>Open Source</h3>
+                        <p>All notes are<br>public and<br>clonable</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="#0066ff"/>
+                            </svg>
+                        </div>
+                        <h3>Instant</h3>
+                        <p>Real-time note<br>sharing and<br>editing</p>
+                    </div>
+                </div>
+                
+                <div class="room-input-container">
+                    <div class="pin-inputs">
+                        <input type="text" maxlength="1" class="pin-input" id="pin1">
+                        <input type="text" maxlength="1" class="pin-input" id="pin2">
+                        <input type="text" maxlength="1" class="pin-input" id="pin3">
+                        <input type="text" maxlength="1" class="pin-input" id="pin4">
+                        <input type="text" maxlength="1" class="pin-input" id="pin5">
+                        <input type="text" maxlength="1" class="pin-input" id="pin6">
+                    </div>
+                    <div class="room-input-label">
+                        <span>Enter your 6-digit room number</span>
+                        <span class="or-text">or</span>
+                        <button class="random-room-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 3L19 3L19 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4 20L19 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M19 16L19 19L16 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15 15L20 20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4 4L9 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <p class="pin-instruction">Enter 6-digit code</p>
+            <footer class="footer">
+                <a href="https://github.com/PurpleShipHub/QNote" target="_blank" class="github-link">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                </a>
+                <div class="copyright">© 2025 <a href="https://purpleship.io/" target="_blank" class="purpleship-link">PurpleShip</a></div>
+            </footer>
         </div>
         
-        <div class="note-section" id="noteSection" style="display: none;">
-            <textarea id="noteContent" placeholder="Enter your note here..." maxlength="10240"></textarea>
-            <div class="button-group">
-                <button id="cancelBtn">Back</button>
-                <button id="saveBtn">Save</button>
-                <button id="copyBtn">Copy</button>
+        <!-- Note Screen -->
+        <div id="noteScreen" class="screen">
+            <div class="container">
+                <h1 class="logo logo-link" id="noteLogo">
+                    <span class="logo-q">Q</span><span class="logo-note">Note</span>
+                </h1>
+                
+                <div class="pin-display">
+                    <span class="pin-digit">0</span>
+                    <span class="pin-digit">0</span>
+                    <span class="pin-digit">0</span>
+                    <span class="pin-digit">0</span>
+                    <span class="pin-digit">0</span>
+                    <span class="pin-digit">0</span>
+                </div>
+                
+                <div class="note-container">
+                    <div class="note-header">
+                        <div class="room-info">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="#0066ff" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="3" fill="#0066ff"/>
+                            </svg>
+                            <span>Public Room</span>
+                        </div>
+                        <button class="share-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 5.12549 15.0077 5.24919 15.0227 5.37063L8.08259 9.20012C7.54303 8.46869 6.70015 8 5.75 8C4.09315 8 2.75 9.34315 2.75 11C2.75 12.6569 4.09315 14 5.75 14C6.70015 14 7.54303 13.5313 8.08259 12.7999L15.0227 16.6294C15.0077 16.7508 15 16.8745 15 17C15 18.6569 16.3431 20 18 20C19.6569 20 21 18.6569 21 17C21 15.3431 19.6569 14 18 14C17.0499 14 16.207 14.4687 15.6674 15.2001L8.72734 11.3706C8.74229 11.2492 8.75 11.1255 8.75 11C8.75 10.8745 8.74229 10.7508 8.72734 10.6294L15.6674 6.79988C16.207 7.53131 17.0499 8 18 8Z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <textarea class="note-editor" placeholder="Start writing your note here..."></textarea>
+                    
+                    <div class="note-footer">
+                        <div class="character-count">
+                            <span id="charCount">0</span> / 10,240 characters
+                        </div>
+                        <div class="save-status">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <span>Never saved</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="backBtn">Back</button>
+                        <button class="btn btn-secondary" id="copyBtn">Copy</button>
+                        <button class="btn btn-primary" id="saveBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+            <footer class="footer">
+                <a href="https://github.com/PurpleShipHub/QNote" target="_blank" class="github-link">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                </a>
+                <div class="copyright">© 2025 <a href="https://purpleship.io/" target="_blank" class="purpleship-link">PurpleShip</a></div>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Toast Message -->
+    <div id="toast" class="toast">
+        <span class="toast-message"></span>
+    </div>
+    
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Note</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-url-container">
+                    <input type="text" id="shareUrl" class="share-url-input" readonly>
+                    <button class="copy-url-btn">Copy</button>
+                </div>
+                <div class="share-options">
+                    <button class="share-option" data-share="twitter">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                        </svg>
+                        <span>Twitter</span>
+                    </button>
+                    <button class="share-option" data-share="facebook">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                        </svg>
+                        <span>Facebook</span>
+                    </button>
+                    <button class="share-option" data-share="whatsapp">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+                        </svg>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button class="share-option" data-share="email">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <span>Email</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="toast" id="toast"></div>
-    
-    <!-- Loading overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
-    
-    <footer>
-        <p>&copy; 2025 <a href="https://purpleship.io/" target="_blank">PurpleShip</a></p>
-    </footer>
-    
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
