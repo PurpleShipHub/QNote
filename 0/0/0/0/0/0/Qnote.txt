@@ -1,50 +1,84 @@
-0# Welcome to QNote! 📝
+Welcome to QNote! 📝
 
-**QNote** is an *open collaborative* note-taking platform with **Markdown support**! Anyone can create and share notes using 6-digit room numbers.
 
-## ✨ Hybrid Markdown Editor
+QNote is an open collaborative note-taking platform with Markdown support! Anyone can create and share notes using 6-digit room numbers.
+
+
+✨ Hybrid Markdown Editor
+
 This revolutionary editor shows:
-- **Current line**: Raw markdown (what you're typing)
-- **Other lines**: Beautiful rendered markdown
+
+Current line: Raw markdown (what you're typing)
+
+Other lines: Beautiful rendered markdown
+
 
 Try typing markdown syntax and watch the magic happen! ✨
 
-## 🚀 How it works:
-1. **Enter a room number** (000000 to 999999) above
-2. **Start writing in Markdown** - your changes are saved automatically
-3. **Share the room number** with others to collaborate
-4. **All notes are public** and stored on GitHub
 
-## 📝 Markdown Examples:
+🚀 How it works:
 
-### Headers
-`# H1`, `## H2`, `### H3`
+Enter a room number (000000 to 999999) above
 
-### Formatting
-- `**bold text**` → **bold text**
-- `*italic text*` → *italic text*
-- ``code`` → `code`
-- `[link](url)` → [link](https://qnote.io)
+Start writing in Markdown - your changes are saved automatically
 
-### Lists
-- Bullet point with `-` or `*`
-- 1. Numbered lists with `1.`
+Share the room number with others to collaborate
 
-## 🌟 Features:
-- 🎨 **Hybrid Editor** - Edit and preview simultaneously
-- 🌍 **Open Source** - View the code on GitHub
-- 🔄 **Real-time collaboration** - Share room numbers instantly  
-- 📱 **Works everywhere** - No apps to install
-- 🔗 **Direct links** - Share rooms via URL
-- 💾 **Auto-save** - Never lose your work
+All notes are public and stored on GitHub
 
-## 🎯 Try it out:
-- **Room #123456** - Public sandbox for testing
-- **Room #999999** - Community message board
-- **Random room** - Click the shuffle button for a new room
 
----
+📝 Markdown Examples:
 
-*This is room #000000 - the welcome room with **Markdown support**! Enter any other 6-digit number to create or join a different room.*
 
-**Happy markdown note-taking! 🚀**
+Headers
+
+H1, ## H2, ### H3
+
+
+Formatting
+
+bold text → bold text
+
+italic text → italic text
+
+code → code
+
+link → link
+
+
+Lists
+
+Bullet point with - or *
+
+Numbered lists with 1.
+
+
+🌟 Features:
+
+🎨 Hybrid Editor - Edit and preview simultaneously
+
+🌍 Open Source - View the code on GitHub
+
+🔄 Real-time collaboration - Share room numbers instantly
+
+📱 Works everywhere - No apps to install
+
+🔗 Direct links - Share rooms via URL
+💾 Auto-save - Never lose your work
+
+
+🎯 Try it out:
+
+Room #123456 - Public sandbox for testing
+
+Room #999999 - Community message board
+
+Random room - Click the shuffle button for a new room
+
+
+
+
+This is room #000000 - the welcome room with Markdown support! Enter any other 6-digit number to create or join a different room.
+
+
+Happy markdown note-taking! 🚀
