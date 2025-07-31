@@ -3,7 +3,7 @@ const titleScreen = document.getElementById('titleScreen');
 const noteScreen = document.getElementById('noteScreen');
 const pinInputs = document.querySelectorAll('.pin-input');
 const pinDigits = document.querySelectorAll('.pin-digit');
-const randomRoomBtn = document.querySelector('.random-room-btn');
+const randomRoomBtn = document.querySelector('.random-btn'); // 올바른 클래스명
 const backBtn = document.getElementById('backBtn');
 const copyBtn = document.getElementById('copyBtn');
 const saveBtn = document.getElementById('saveBtn');
@@ -14,11 +14,6 @@ const loadingOverlay = document.getElementById('loadingOverlay');
 const toast = document.getElementById('toast');
 const toastMessage = toast.querySelector('.toast-message');
 const shareBtn = document.querySelector('.share-btn');
-const shareModal = document.getElementById('shareModal');
-const modalClose = shareModal.querySelector('.modal-close');
-const shareUrlInput = document.getElementById('shareUrl');
-const copyUrlBtn = shareModal.querySelector('.copy-url-btn');
-const shareOptions = shareModal.querySelectorAll('.share-option');
 const noteLogo = document.getElementById('noteLogo');
 
 // State
@@ -27,22 +22,42 @@ let lastSaved = null;
 let saveTimeout = null;
 let placeholderIntervals = [];
 
-// Initialize
-initializeApp();
-
-// Toast function
-function showToast(message, type = 'info') {
-    toastMessage.textContent = message;
-    toast.className = `toast ${type} show`;
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+// Clear all browser caches on startup
+function clearAllCaches() {
+    if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+        }).then(() => {
+            console.log('All browser caches cleared successfully.');
+        }).catch(error => {
+            console.log('Error clearing browser caches:', error.message);
+        });
+    } else {
+        console.log('Web Cache API not supported in this browser.');
+    }
 }
 
+// Auto-resize textarea function
+function autoResizeTextarea() {
+    if (noteEditor) {
+        noteEditor.style.height = 'auto';
+        noteEditor.style.height = Math.max(noteEditor.scrollHeight, 300) + 'px';
+    }
+}
+
+// Initialize App
 function initializeApp() {
+    console.log('Initializing app...');
+    
+    // Clear all caches first
+    clearAllCaches();
+    
     // Focus first input on load
-    pinInputs[0].focus();
+    if (pinInputs[0]) {
+        pinInputs[0].focus();
+    }
     
     // Start placeholder animation
     startPlaceholderAnimation();
@@ -61,26 +76,46 @@ function initializeApp() {
     });
 
     // Random room button
-    randomRoomBtn.addEventListener('click', generateRandomRoom);
+    if (randomRoomBtn) {
+        randomRoomBtn.addEventListener('click', generateRandomRoom);
+    }
 
     // Note editor
-    noteEditor.addEventListener('input', handleNoteInput);
+    if (noteEditor) {
+        noteEditor.addEventListener('input', () => {
+            handleNoteInput();
+            autoResizeTextarea();
+        });
+    }
 
-    // Action buttons
-    backBtn.addEventListener('click', goToTitleScreen);
-    copyBtn.addEventListener('click', copyNote);
-    saveBtn.addEventListener('click', saveNote);
-    shareBtn.addEventListener('click', openShareModal);
+    // Action buttons with null checks
+    if (backBtn) {
+        backBtn.addEventListener('click', goToTitleScreen);
+        console.log('Back button listener added');
+    } else {
+        console.log('Back button not found');
+    }
     
-    // Modal events
-    modalClose.addEventListener('click', closeShareModal);
-    shareModal.addEventListener('click', (e) => {
-        if (e.target === shareModal) closeShareModal();
-    });
-    copyUrlBtn.addEventListener('click', copyShareUrl);
-    shareOptions.forEach(option => {
-        option.addEventListener('click', handleShare);
-    });
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyNote);
+        console.log('Copy button listener added');
+    } else {
+        console.log('Copy button not found');
+    }
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveNote);
+        console.log('Save button listener added');
+    } else {
+        console.log('Save button not found');
+    }
+    
+    if (shareBtn) {
+        shareBtn.addEventListener('click', shareNote);
+        console.log('Share button listener added');
+    } else {
+        console.log('Share button not found');
+    }
     
     // Logo click to go home
     if (noteLogo) {
@@ -93,6 +128,16 @@ function initializeApp() {
     if (room && /^\d{6}$/.test(room)) {
         enterRoom(room);
     }
+}
+
+// Toast function
+function showToast(message, type = 'info') {
+    toastMessage.textContent = message;
+    toast.className = `toast ${type} show`;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 }
 
 function handlePinInput(e, index) {
@@ -217,97 +262,34 @@ async function loadRoomData(room) {
     const minLoadingTime = 300;
     const loadingStartTime = Date.now();
 
-    // Force clear browser cache for this domain (async, don't wait)
-    if ('caches' in window) {
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => caches.delete(cacheName))
-            );
-        }).then(() => {
-            console.log('Browser caches cleared in background');
-        }).catch(error => {
-            console.log('Could not clear caches:', error.message);
-        });
-    }
-    
-    // Also try to clear specific GitHub URLs from browser cache
-    const digits = room.split('');
-    const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
-    const urlsToInvalidate = [
-        `https://github.com/PurpleShipHub/QNote/blob/main/${path}`,
-        `https://raw.githubusercontent.com/PurpleShipHub/QNote/main/${path}`,
-        `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`
-    ];
-    
-    // Force reload of specific URLs by making HEAD requests with no-cache
-    urlsToInvalidate.forEach(url => {
-        fetch(url, { 
-            method: 'HEAD', 
-            cache: 'reload',
-            mode: 'no-cors'
-        }).catch(() => {
-            // Ignore errors, this is just cache invalidation
-        });
-    });
+    // Check if we're in local environment
+    const isLocal = window.location.protocol === 'file:' || 
+                   window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1';
 
-    try {
-        // Load from GitHub repository directly (using existing file structure)
-        
-        let content = '';
-        let success = false;
-        
-        // Create strong cache busting parameters
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(7);
-        const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const cacheBuster = `nocache=1&t=${timestamp}&r=${random}&uuid=${uuid}&room=${room}&v=${Math.floor(Math.random() * 999999)}`;
-        
-        // Check if we recently saved to this room (within last 30 seconds)
-        const recentlySaved = window.justSavedTimestamp && 
-                             (timestamp - window.justSavedTimestamp < 30000) &&
-                             window.lastSavedRoom === room;
-        
-        if (recentlySaved) {
-            console.log('Recently saved to this room, trying GitHub API first for fresh data');
-        }
-        
-        // If recently saved, try GitHub API first for most up-to-date content
-        if (recentlySaved) {
-            try {
-                const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`;
-                console.log('Trying GitHub API first (recently saved):', apiUrl);
-                
-                const apiResponse = await fetch(apiUrl, {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'User-Agent': 'QNote-App'
-                    },
-                    cache: 'no-store'
-                });
-                
-                if (apiResponse.ok) {
-                    const data = await apiResponse.json();
-                    content = atob(data.content); // Decode base64
-                    success = true;
-                    console.log(`Successfully loaded from GitHub API (fresh), content length: ${content.length}`);
-                } else if (apiResponse.status === 404) {
-                    console.log(`Room ${room} is new (API confirms file doesn't exist)`);
-                    success = false;
-                } else if (apiResponse.status === 403) {
-                    console.log('GitHub API rate limit, falling back to URLs');
-                    // Will fall through to URL attempts
-                } else {
-                    console.log(`GitHub API failed with status ${apiResponse.status}, trying URLs`);
-                    // Will fall through to URL attempts
-                }
-            } catch (apiError) {
-                console.log('GitHub API failed, trying URLs:', apiError.message);
-                // Will fall through to URL attempts
-            }
-        }
-        
-        // If not recently saved OR API failed, use normal URL order
-        if (!success) {
+    let content = '';
+    let success = false;
+
+    // Only try to read from GitHub in deployed environment
+    if (!isLocal) {
+        // Force clear browser cache for this domain (async, don't wait)
+        clearAllCaches();
+
+        try {
+            // Load from GitHub repository directly (using existing file structure)
+            
+            // Create strong cache busting parameters
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substring(7);
+            const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            const nonce = Math.random().toString(36).substring(2, 15);
+            const bust = Math.floor(Math.random() * 9999999999);
+            const cacheBuster = `nocache=1&t=${timestamp}&r=${random}&uuid=${uuid}&room=${room}&v=${Math.floor(Math.random() * 999999)}&nonce=${nonce}&bust=${bust}&_=${Date.now()}&force=1`;
+            
+            // 올바른 경로 구조로 수정
+            const digits = room.split('');
+            const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
+            
             // 1st attempt: GitHub blob URL (most reliable)
             try {
                 const blobUrl = `https://github.com/PurpleShipHub/QNote/blob/main/${path}?raw=1&${cacheBuster}`;
@@ -317,7 +299,14 @@ async function loadRoomData(room) {
                     method: 'GET',
                     cache: 'no-store',
                     mode: 'cors',
-                    redirect: 'follow'
+                    redirect: 'follow',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                        'Expires': '0',
+                        'If-None-Match': '*',
+                        'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
+                    }
                 });
                 
                 if (blobResponse.ok) {
@@ -342,7 +331,14 @@ async function loadRoomData(room) {
                         method: 'GET',
                         cache: 'no-store',
                         mode: 'cors',
-                        redirect: 'follow'
+                        redirect: 'follow',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+                            'Pragma': 'no-cache',
+                            'Expires': '0',
+                            'If-None-Match': '*',
+                            'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
+                        }
                     });
                     
                     if (rawResponse.ok) {
@@ -358,7 +354,7 @@ async function loadRoomData(room) {
                 } catch (rawError) {
                     console.log('Raw URL also failed, trying GitHub API as last resort:', rawError.message);
                     
-                    // 3rd attempt: GitHub API (last resort) - no cache buster for API
+                    // 3rd attempt: GitHub API (last resort)
                     try {
                         const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}`;
                         console.log('Trying GitHub API as last resort:', apiUrl);
@@ -392,49 +388,61 @@ async function loadRoomData(room) {
                     }
                 }
             }
+        } catch (error) {
+            console.error('Error loading from GitHub:', error);
+            showToast('Failed to load note from server', 'error');
         }
-        
-        // Force clear editor again before setting new content
-        noteEditor.value = '';
-        noteEditor.textContent = '';
-        
-        // Set the editor content (empty for new rooms is normal)
-        console.log(`Setting editor content: "${content}" (length: ${content.length})`);
-        noteEditor.value = content;
-        
-        // Force DOM update
-        noteEditor.dispatchEvent(new Event('input', { bubbles: true }));
-        
-        if (success) {
-            lastSaved = new Date().toISOString();
+    } else {
+        // Local environment - skip reading, start with empty content
+        console.log('Local environment detected - starting with empty content. Deploy to Netlify to enable reading existing notes.');
+        success = false;
+    }
+    
+    // Force clear editor again before setting new content
+    noteEditor.value = '';
+    noteEditor.textContent = '';
+    
+    // Set the editor content (empty for new rooms is normal)
+    console.log(`Setting editor content: "${content}" (length: ${content.length})`);
+    noteEditor.value = content;
+    
+    // Auto-resize textarea after setting content
+    autoResizeTextarea();
+    
+    // Force DOM update
+    noteEditor.dispatchEvent(new Event('input', { bubbles: true }));
+    
+    if (success) {
+        lastSaved = new Date().toISOString();
+    } else {
+        lastSaved = null;
+        if (isLocal) {
+            console.log(`Room ${room} ready for editing (local mode - no reading from GitHub)`);
         } else {
-            lastSaved = null;
             console.log(`Room ${room} is ready for new content`);
         }
-        
-        // Force refresh the UI to ensure no cached states
-        setTimeout(() => {
-            updateCharCount();
-            updateSaveStatus();
-        }, 50);
-        
-    } catch (error) {
-        console.error('Error loading from GitHub:', error);
-        showToast('Failed to load note from server', 'error');
-    } finally {
-        // Ensure minimum loading time for better UX
-        const loadingElapsed = Date.now() - loadingStartTime;
-        const remainingTime = Math.max(0, minLoadingTime - loadingElapsed);
-        
-        setTimeout(() => {
-            // Hide loading state
-            loadingOverlay.classList.remove('active');
-            
-            // Always update UI
-            updateCharCount();
-            updateSaveStatus();
-        }, remainingTime);
     }
+    
+    // Force refresh the UI to ensure no cached states
+    setTimeout(() => {
+        updateCharCount();
+        updateSaveStatus();
+        autoResizeTextarea();
+    }, 50);
+    
+    // Always hide loading state
+    const loadingElapsed = Date.now() - loadingStartTime;
+    const remainingTime = Math.max(0, minLoadingTime - loadingElapsed);
+    
+    setTimeout(() => {
+        // Hide loading state
+        loadingOverlay.classList.remove('active');
+        
+        // Always update UI
+        updateCharCount();
+        updateSaveStatus();
+        autoResizeTextarea();
+    }, remainingTime);
 }
 
 function handleNoteInput() {
@@ -495,6 +503,7 @@ let lastSaveTime = 0;
 const MIN_SAVE_INTERVAL = 2000; // 2 seconds minimum between saves
 
 async function saveNote() {
+    console.log('Save button clicked');
     const content = noteEditor.value;
     
     if (content.length > 10240) {
@@ -561,19 +570,43 @@ async function saveNote() {
 }
 
 function copyNote() {
+    console.log('Copy button clicked');
     if (!noteEditor.value.trim()) {
         showToast('Nothing to copy!', 'error');
         return;
     }
     
+    copyToClipboard(noteEditor.value);
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Note copied to clipboard!', 'success');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            // Fallback to older method
+            fallbackCopyToClipboard(text);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(text);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
     noteEditor.select();
-    document.execCommand('copy');
-    
-    // Show success toast
-    showToast('Note copied to clipboard!', 'success');
+    try {
+        document.execCommand('copy');
+        showToast('Note copied to clipboard!', 'success');
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy to clipboard', 'error');
+    }
 }
 
 function goToTitleScreen() {
+    console.log('Back button clicked');
     // Clear current room data
     currentRoom = '';
     noteEditor.value = '';
@@ -606,8 +639,9 @@ function goToTitleScreen() {
     }, 100);
 }
 
-// Share modal functions
-function openShareModal() {
+// Share function using Web Share API or clipboard fallback
+function shareNote() {
+    console.log('Share button clicked');
     const shareUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}`;
     const shareData = {
         title: 'QNote - Shared Note',
@@ -622,55 +656,14 @@ function openShareModal() {
             .then(() => showToast('Shared successfully!', 'success'))
             .catch((error) => {
                 if (error.name !== 'AbortError') {
-                    // Fallback to custom modal if share failed
-                    showCustomShareModal(shareUrl);
+                    // Fallback to clipboard if share failed
+                    copyToClipboard(shareUrl);
                 }
             });
     } else {
-        // Fallback to custom modal
-        showCustomShareModal(shareUrl);
-    }
-}
-
-function showCustomShareModal(shareUrl) {
-    shareUrlInput.value = shareUrl;
-    shareModal.classList.add('active');
-}
-
-function closeShareModal() {
-    shareModal.classList.remove('active');
-}
-
-function copyShareUrl() {
-    shareUrlInput.select();
-    document.execCommand('copy');
-    showToast('Link copied to clipboard!', 'success');
-}
-
-function handleShare(e) {
-    const shareType = e.currentTarget.dataset.share;
-    const shareUrl = shareUrlInput.value;
-    const shareText = `Check out my note on QNote!`;
-    
-    let shareLink = '';
-    
-    switch(shareType) {
-        case 'twitter':
-            shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-            break;
-        case 'facebook':
-            shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-            break;
-        case 'whatsapp':
-            shareLink = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
-            break;
-        case 'email':
-            shareLink = `mailto:?subject=${encodeURIComponent('QNote - Shared Note')}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`;
-            break;
-    }
-    
-    if (shareLink) {
-        window.open(shareLink, '_blank');
+        // Fallback to clipboard
+        copyToClipboard(shareUrl);
+        showToast('Share link copied to clipboard!', 'success');
     }
 }
 
@@ -721,3 +714,15 @@ setInterval(() => {
         updateSaveStatus();
     }
 }, 60000); // Every minute
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// Clear caches on page load and unload
+window.addEventListener('load', function() {
+    clearAllCaches();
+});
+
+window.addEventListener('beforeunload', function() {
+    clearAllCaches();
+});

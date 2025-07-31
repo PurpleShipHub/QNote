@@ -16,67 +16,18 @@
                 </h1>
                 <h2 class="tagline">"OPEN COLLABORATIVE NOTES"</h2>
                 
-                <div class="features">
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M16 11C17.66 11 19 9.66 19 8C19 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11Z" fill="#0066ff"/>
-                                <path d="M8 11C9.66 11 11 9.66 11 8C11 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11Z" fill="#0066ff"/>
-                                <path d="M8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13Z" fill="#0066ff"/>
-                                <path d="M16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z" fill="#0066ff"/>
-                            </svg>
-                        </div>
-                        <h3>Collaborative</h3>
-                        <p>Share notes<br>through 6-digit<br>room numbers</p>
-                    </div>
-                    
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" stroke="#0066ff" stroke-width="2" fill="none"/>
-                                <circle cx="12" cy="12" r="3" fill="#0066ff"/>
-                                <circle cx="12" cy="5" r="2" fill="#0066ff"/>
-                                <circle cx="12" cy="19" r="2" fill="#0066ff"/>
-                                <circle cx="5" cy="12" r="2" fill="#0066ff"/>
-                                <circle cx="19" cy="12" r="2" fill="#0066ff"/>
-                            </svg>
-                        </div>
-                        <h3>Open Source</h3>
-                        <p>All notes are<br>public and<br>clonable</p>
-                    </div>
-                    
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="#0066ff"/>
-                            </svg>
-                        </div>
-                        <h3>Instant</h3>
-                        <p>Real-time note<br>sharing and<br>editing</p>
-                    </div>
-                </div>
-                
                 <div class="room-input-container">
                     <div class="pin-inputs">
-                        <input type="text" maxlength="1" class="pin-input" id="pin1">
-                        <input type="text" maxlength="1" class="pin-input" id="pin2">
-                        <input type="text" maxlength="1" class="pin-input" id="pin3">
-                        <input type="text" maxlength="1" class="pin-input" id="pin4">
-                        <input type="text" maxlength="1" class="pin-input" id="pin5">
-                        <input type="text" maxlength="1" class="pin-input" id="pin6">
+                        <input type="text" maxlength="1" class="pin-input" id="pin1" placeholder="0">
+                        <input type="text" maxlength="1" class="pin-input" id="pin2" placeholder="0">
+                        <input type="text" maxlength="1" class="pin-input" id="pin3" placeholder="0">
+                        <input type="text" maxlength="1" class="pin-input" id="pin4" placeholder="0">
+                        <input type="text" maxlength="1" class="pin-input" id="pin5" placeholder="0">
+                        <input type="text" maxlength="1" class="pin-input" id="pin6" placeholder="0">
                     </div>
-                    <div class="room-input-label">
-                        <span>Enter your 6-digit room number</span>
-                        <span class="or-text">or</span>
-                        <button class="random-room-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M16 3L19 3L19 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M4 20L19 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M19 16L19 19L16 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M15 15L20 20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M4 4L9 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                    <div class="room-number-label">Input your 6-digit pin number</div>
+                    <div class="random-room">
+                        <button class="random-btn" onclick="generateRandomRoom()">Enter Random</button>
                     </div>
                 </div>
             </div>
@@ -110,10 +61,10 @@
                     <div class="note-header">
                         <div class="room-info">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" stroke="#0066ff" stroke-width="2"/>
-                                <circle cx="12" cy="12" r="3" fill="#0066ff"/>
+                                <circle cx="12" cy="12" r="10" stroke="#6c757d" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="3" fill="#6c757d"/>
                             </svg>
-                            <span>Public Room</span>
+                            <span>Public</span>
                         </div>
                         <button class="share-btn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -166,48 +117,7 @@
         <span class="toast-message"></span>
     </div>
     
-    <!-- Share Modal -->
-    <div id="shareModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Share Note</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="share-url-container">
-                    <input type="text" id="shareUrl" class="share-url-input" readonly>
-                    <button class="copy-url-btn">Copy</button>
-                </div>
-                <div class="share-options">
-                    <button class="share-option" data-share="twitter">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
-                        </svg>
-                        <span>Twitter</span>
-                    </button>
-                    <button class="share-option" data-share="facebook">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
-                        </svg>
-                        <span>Facebook</span>
-                    </button>
-                    <button class="share-option" data-share="whatsapp">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-                        </svg>
-                        <span>WhatsApp</span>
-                    </button>
-                    <button class="share-option" data-share="email">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                            <polyline points="22,6 12,13 2,6"/>
-                        </svg>
-                        <span>Email</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
     
     <script src="script.js"></script>
 </body>
