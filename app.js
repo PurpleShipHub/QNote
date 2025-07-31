@@ -13,6 +13,7 @@ const saveBtn = document.getElementById('saveBtn');
 const copyBtn = document.getElementById('copyBtn');
 const toast = document.getElementById('toast');
 const pinSection = document.querySelector('.pin-section');
+const loadingOverlay = document.getElementById('loadingOverlay');
 
 let currentPin = '';
 
@@ -207,6 +208,13 @@ saveBtn.addEventListener('click', async () => {
         return;
     }
     
+    // 로딩 시작
+    loadingOverlay.classList.add('active');
+    noteContent.disabled = true;
+    cancelBtn.disabled = true;
+    saveBtn.disabled = true;
+    copyBtn.disabled = true;
+    
     try {
         // Netlify 함수 호출
         const response = await fetch(`${NETLIFY_FUNCTION_URL}/save-note`, {
@@ -228,6 +236,13 @@ saveBtn.addEventListener('click', async () => {
     } catch (error) {
         console.error('Error saving note:', error);
         showToast('Save failed. Please try again.', 'error');
+    } finally {
+        // 로딩 종료
+        loadingOverlay.classList.remove('active');
+        noteContent.disabled = false;
+        cancelBtn.disabled = false;
+        saveBtn.disabled = false;
+        copyBtn.disabled = false;
     }
 });
 
