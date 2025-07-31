@@ -485,10 +485,21 @@ async function saveNote() {
     
     try {
         // Determine the correct API URL based on environment
-        const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const apiUrl = isLocal 
-            ? 'https://qnote-backend.netlify.app/.netlify/functions/save-note'
-            : '/.netlify/functions/save-note';
+        const isLocal = window.location.protocol === 'file:' || 
+                       window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1';
+        
+        // qnote.io 도메인은 Netlify 백엔드를 사용
+        const isQnoteIo = window.location.hostname === 'qnote.io';
+        
+        let apiUrl;
+        if (isLocal || isQnoteIo) {
+            // 로컬 환경이거나 qnote.io 도메인에서는 직접 백엔드 URL 사용
+            apiUrl = 'https://qnote-backend.netlify.app/.netlify/functions/save-note';
+        } else {
+            // qnote-backend.netlify.app에서는 상대 경로 사용
+            apiUrl = '/.netlify/functions/save-note';
+        }
         
         console.log('Save API URL:', apiUrl);
         
