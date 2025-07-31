@@ -25,6 +25,7 @@ const noteLogo = document.getElementById('noteLogo');
 let currentRoom = '';
 let lastSaved = null;
 let saveTimeout = null;
+let placeholderIntervals = [];
 
 // Initialize
 initializeApp();
@@ -40,11 +41,23 @@ function showToast(message, type = 'info') {
 }
 
 function initializeApp() {
+    // Focus first input on load
+    pinInputs[0].focus();
+    
+    // Start placeholder animation
+    startPlaceholderAnimation();
+    
     // Setup PIN input handlers
     pinInputs.forEach((input, index) => {
         input.addEventListener('input', (e) => handlePinInput(e, index));
         input.addEventListener('keydown', (e) => handlePinKeydown(e, index));
         input.addEventListener('paste', handlePinPaste);
+        input.addEventListener('focus', stopPlaceholderForInput);
+        input.addEventListener('blur', (e) => {
+            if (!e.target.value) {
+                startPlaceholderForInput(index);
+            }
+        });
     });
 
     // Random room button
@@ -147,8 +160,11 @@ function checkRoom() {
     }
 }
 
-function enterRoom(room) {
+async function enterRoom(room) {
     currentRoom = room;
+    
+    // Stop placeholder animations
+    stopAllPlaceholderAnimations();
     
     // Update URL
     const url = new URL(window.location);
@@ -162,30 +178,48 @@ function enterRoom(room) {
     });
     
     // Load room data
-    loadRoomData(room);
+    await loadRoomData(room);
     
     // Show note screen
     titleScreen.classList.remove('active');
     noteScreen.classList.add('active');
 }
 
-function loadRoomData(room) {
+async function loadRoomData(room) {
     // Clear previous content first
     noteEditor.value = '';
     lastSaved = null;
     
-    // Load from localStorage (in real app, this would be from server)
-    const savedData = localStorage.getItem(`qnote_${room}`);
+    // Show loading state
+    loadingOverlay.classList.add('active');
     
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        noteEditor.value = data.content || '';
-        lastSaved = data.lastSaved;
+    try {
+        // Load from GitHub repository directly
+        const digits = room.split('');
+        const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
+        const url = `https://raw.githubusercontent.com/PurpleShipHub/QNote/main/${path}`;
+        
+        const response = await fetch(url);
+        
+        if (response.ok) {
+            const content = await response.text();
+            noteEditor.value = content;
+            lastSaved = new Date().toISOString(); // We don't have exact time from raw file
+        } else if (response.status === 404) {
+            // Room doesn't exist yet, that's okay
+            console.log(`Room ${room} doesn't exist yet`);
+        }
+    } catch (error) {
+        console.error('Error loading from GitHub:', error);
+        showToast('Failed to load note from server', 'error');
+    } finally {
+        // Hide loading state
+        loadingOverlay.classList.remove('active');
+        
+        // Always update UI
+        updateCharCount();
+        updateSaveStatus();
     }
-    
-    // Always update UI
-    updateCharCount();
-    updateSaveStatus();
 }
 
 function handleNoteInput() {
@@ -241,7 +275,7 @@ function updateSaveStatus() {
     }
 }
 
-function saveNote() {
+async function saveNote() {
     const content = noteEditor.value;
     
     if (content.length > 10240) {
@@ -252,25 +286,35 @@ function saveNote() {
     // Show loading overlay
     loadingOverlay.classList.add('active');
     
-    // Simulate save delay (in real app, this would be actual server save)
-    setTimeout(() => {
-        // Save to localStorage
-        const data = {
-            content: content,
-            lastSaved: new Date().toISOString()
-        };
+    try {
+        // Call Netlify Function to save to GitHub
+        const response = await fetch('/.netlify/functions/save-note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                room: currentRoom,
+                content: content
+            })
+        });
         
-        localStorage.setItem(`qnote_${currentRoom}`, JSON.stringify(data));
-        
-        lastSaved = data.lastSaved;
-        updateSaveStatus();
-        
+        if (response.ok) {
+            const result = await response.json();
+            lastSaved = result.lastSaved;
+            updateSaveStatus();
+            showToast('Note saved successfully!', 'success');
+        } else {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save note');
+        }
+    } catch (error) {
+        console.error('Error saving note:', error);
+        showToast('Failed to save note: ' + error.message, 'error');
+    } finally {
         // Hide loading overlay
         loadingOverlay.classList.remove('active');
-        
-        // Show success toast
-        showToast('Note saved successfully!', 'success');
-    }, 1000); // 1 second simulated save time
+    }
 }
 
 function copyNote() {
@@ -294,11 +338,14 @@ function goToTitleScreen() {
     updateCharCount();
     updateSaveStatus();
     
+    // Stop any existing animations first
+    stopAllPlaceholderAnimations();
+    
     // Clear PIN inputs
     pinInputs.forEach(input => {
         input.value = '';
+        input.placeholder = '';
     });
-    pinInputs[0].focus();
     
     // Clear URL
     const url = new URL(window.location);
@@ -308,6 +355,12 @@ function goToTitleScreen() {
     // Show title screen
     noteScreen.classList.remove('active');
     titleScreen.classList.add('active');
+    
+    // Focus first input and restart animation after a small delay
+    setTimeout(() => {
+        pinInputs[0].focus();
+        startPlaceholderAnimation();
+    }, 100);
 }
 
 // Share modal functions
@@ -376,6 +429,47 @@ function handleShare(e) {
     if (shareLink) {
         window.open(shareLink, '_blank');
     }
+}
+
+// Placeholder animation functions
+function startPlaceholderAnimation() {
+    pinInputs.forEach((input, index) => {
+        if (!input.value) {
+            startPlaceholderForInput(index);
+        }
+    });
+}
+
+function startPlaceholderForInput(index) {
+    // Clear any existing interval for this input
+    if (placeholderIntervals[index]) {
+        clearInterval(placeholderIntervals[index]);
+    }
+    
+    // Start new interval
+    placeholderIntervals[index] = setInterval(() => {
+        const randomNum = Math.floor(Math.random() * 10);
+        pinInputs[index].placeholder = randomNum.toString();
+    }, 100); // Change every 100ms for fast animation
+}
+
+function stopPlaceholderForInput(e) {
+    const index = Array.from(pinInputs).indexOf(e.target);
+    if (placeholderIntervals[index]) {
+        clearInterval(placeholderIntervals[index]);
+        placeholderIntervals[index] = null;
+        e.target.placeholder = '';
+    }
+}
+
+function stopAllPlaceholderAnimations() {
+    placeholderIntervals.forEach(interval => {
+        if (interval) clearInterval(interval);
+    });
+    placeholderIntervals = [];
+    pinInputs.forEach(input => {
+        input.placeholder = '';
+    });
 }
 
 // Update save status periodically
