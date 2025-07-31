@@ -170,6 +170,10 @@ function enterRoom(room) {
 }
 
 function loadRoomData(room) {
+    // Clear previous content first
+    noteEditor.value = '';
+    lastSaved = null;
+    
     // Load from localStorage (in real app, this would be from server)
     const savedData = localStorage.getItem(`qnote_${room}`);
     
@@ -177,9 +181,11 @@ function loadRoomData(room) {
         const data = JSON.parse(savedData);
         noteEditor.value = data.content || '';
         lastSaved = data.lastSaved;
-        updateCharCount();
-        updateSaveStatus();
     }
+    
+    // Always update UI
+    updateCharCount();
+    updateSaveStatus();
 }
 
 function handleNoteInput() {
@@ -281,6 +287,13 @@ function copyNote() {
 }
 
 function goToTitleScreen() {
+    // Clear current room data
+    currentRoom = '';
+    noteEditor.value = '';
+    lastSaved = null;
+    updateCharCount();
+    updateSaveStatus();
+    
     // Clear PIN inputs
     pinInputs.forEach(input => {
         input.value = '';
