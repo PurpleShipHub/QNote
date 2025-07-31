@@ -485,23 +485,31 @@ async function saveNote() {
     
     try {
         // Determine the correct API URL based on environment
-        const isLocal = window.location.protocol === 'file:' || 
-                       window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1';
+        const currentHostname = window.location.hostname;
+        const currentProtocol = window.location.protocol;
         
-        // qnote.io 도메인은 Netlify 백엔드를 사용
-        const isQnoteIo = window.location.hostname === 'qnote.io';
+        console.log('Current hostname:', currentHostname);
+        console.log('Current protocol:', currentProtocol);
+        
+        const isLocal = currentProtocol === 'file:' || 
+                       currentHostname === 'localhost' || 
+                       currentHostname === '127.0.0.1';
+        
+        const isNetlifyBackend = currentHostname.includes('qnote-backend.netlify.app');
         
         let apiUrl;
-        if (isLocal || isQnoteIo) {
-            // 로컬 환경이거나 qnote.io 도메인에서는 직접 백엔드 URL 사용
-            apiUrl = 'https://qnote-backend.netlify.app/.netlify/functions/save-note';
-        } else {
+        if (isNetlifyBackend && !isLocal) {
             // qnote-backend.netlify.app에서는 상대 경로 사용
             apiUrl = '/.netlify/functions/save-note';
+        } else {
+            // 다른 모든 환경(로컬, qnote.io 등)에서는 직접 백엔드 URL 사용
+            apiUrl = 'https://qnote-backend.netlify.app/.netlify/functions/save-note';
         }
         
-        console.log('Save API URL:', apiUrl);
+        console.log('Environment detection:');
+        console.log('- isLocal:', isLocal);
+        console.log('- isNetlifyBackend:', isNetlifyBackend);
+        console.log('- Selected API URL:', apiUrl);
         
         // Call Netlify Function to save to GitHub
         const response = await fetch(apiUrl, {
