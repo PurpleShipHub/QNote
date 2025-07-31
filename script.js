@@ -246,7 +246,15 @@ async function enterRoom(room) {
     // Set room as hash
     url.hash = room;
     
-    window.history.pushState({}, '', url);
+    // Use try-catch for pushState to handle file:// protocol
+    try {
+        window.history.pushState({}, '', url);
+    } catch (e) {
+        // In file:// protocol, just update hash directly
+        if (window.location.protocol === 'file:') {
+            window.location.hash = room;
+        }
+    }
     
     // Update PIN display
     const digits = room.split('');
@@ -302,47 +310,57 @@ async function loadRoomData(room) {
     clearAllCaches();
 
     try {
-        // Create strong cache busting parameters
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(7);
-        const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const nonce = Math.random().toString(36).substring(2, 15);
-        const bust = Math.floor(Math.random() * 9999999999);
-        
-        // 올바른 경로 구조로 수정
-        const digits = room.split('');
-        const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
-        
-        // Only use GitHub API to avoid CORS issues
+        // Use Netlify Function to read notes (avoids rate limits)
         try {
-            const apiUrl = `https://api.github.com/repos/PurpleShipHub/QNote/contents/${path}?_=${timestamp}&r=${random}`;
-            console.log('Trying GitHub API:', apiUrl);
+            // Determine the correct API URL based on environment
+            const currentHostname = window.location.hostname;
+            const currentProtocol = window.location.protocol;
             
-            const apiResponse = await fetch(apiUrl, {
+            const isLocal = currentProtocol === 'file:' || 
+                           currentHostname === 'localhost' || 
+                           currentHostname === '127.0.0.1';
+            
+            const isNetlifyBackend = currentHostname.includes('qnote-backend.netlify.app');
+            
+            let apiUrl;
+            if (isNetlifyBackend && !isLocal) {
+                // qnote-backend.netlify.app에서는 상대 경로 사용
+                apiUrl = '/.netlify/functions/read-note';
+            } else {
+                // 다른 모든 환경(로컬, qnote.io 등)에서는 직접 백엔드 URL 사용
+                apiUrl = 'https://qnote-backend.netlify.app/.netlify/functions/read-note';
+            }
+            
+            console.log('Reading from Netlify Function:', apiUrl);
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'QNote-App'
+                    'Content-Type': 'application/json'
                 },
+                body: JSON.stringify({ room }),
                 cache: 'no-store'
             });
             
-            if (apiResponse.ok) {
-                const data = await apiResponse.json();
-                content = atob(data.content); // Decode base64
-                success = true;
-                console.log(`Successfully loaded from GitHub API, content length: ${content.length}`);
-            } else if (apiResponse.status === 404) {
-                console.log(`Room ${room} is new (API confirms file doesn't exist)`);
-                success = false;
-            } else if (apiResponse.status === 403) {
-                console.log('GitHub API rate limit exceeded, using empty content for new room');
-                success = false;
+            if (response.ok) {
+                const data = await response.json();
+                content = data.content || '';
+                success = data.exists;
+                
+                if (data.exists) {
+                    console.log(`Successfully loaded existing note, content length: ${content.length}`);
+                } else {
+                    console.log(`Room ${room} is new (file doesn't exist)`);
+                }
             } else {
-                console.log(`GitHub API failed with status ${apiResponse.status}`);
+                const error = await response.json();
+                console.error('Failed to read note:', error);
+                showToast('Failed to load note', 'error');
                 success = false;
             }
-        } catch (apiError) {
-            console.log('GitHub API failed:', apiError.message);
+        } catch (error) {
+            console.error('Error calling read function:', error);
+            showToast('Network error while loading note', 'error');
             success = false;
         }
     } catch (error) {
@@ -593,7 +611,16 @@ function goToTitleScreen() {
     url.searchParams.delete('room');
     url.hash = '';
     url.pathname = '/';
-    window.history.pushState({}, '', url);
+    
+    // Use try-catch for pushState to handle file:// protocol
+    try {
+        window.history.pushState({}, '', url);
+    } catch (e) {
+        // In file:// protocol, just update hash
+        if (window.location.protocol === 'file:') {
+            window.location.hash = '';
+        }
+    }
     
     // Show title screen
     noteScreen.classList.remove('active');
