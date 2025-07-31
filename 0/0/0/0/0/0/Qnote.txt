@@ -26,33 +26,6 @@ Share the room number with others to collaborate
 
 All notes are public and stored on GitHub
 
-
-📝 Markdown Examples:
-
-
-Headers
-
-H1, ## H2, ### H3
-
-
-Formatting
-
-bold text → bold text
-
-italic text → italic text
-
-code → code
-
-link → link
-
-
-Lists
-
-Bullet point with - or *
-
-Numbered lists with 1.
-
-
 🌟 Features:
 
 🎨 Hybrid Editor - Edit and preview simultaneously
