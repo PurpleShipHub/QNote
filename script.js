@@ -329,7 +329,7 @@ async function loadRoomData(room) {
             } else {
                 // 다른 모든 환경(로컬, qnote.io 등)에서는 직접 백엔드 URL 사용
                 // This will be replaced during deployment
-                apiUrl = '/api/read-note';
+                apiUrl = 'https://xru7u6nnfd.execute-api.ap-northeast-2.amazonaws.com/api/read-note';
             }
             
             console.log('Reading from Netlify Function:', apiUrl);
@@ -508,7 +508,7 @@ async function saveNote() {
         } else {
             // 다른 모든 환경(로컬, qnote.io 등)에서는 직접 백엔드 URL 사용
             // This will be replaced during deployment
-            apiUrl = '/api/save-note';
+            apiUrl = 'https://xru7u6nnfd.execute-api.ap-northeast-2.amazonaws.com/api/save-note';
         }
         
         console.log('Environment detection:');
