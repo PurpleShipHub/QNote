@@ -120,7 +120,11 @@ function initializeApp() {
     
     // Handle browser back button
     window.addEventListener('popstate', function(event) {
-        if (noteScreen.style.display === 'block') {
+        console.log('Popstate event fired', event.state);
+        // If we're on the note screen, go back to home
+        if (window.location.hash && window.location.hash.length > 1) {
+            // Clear the hash
+            window.location.hash = '';
             goToTitleScreen();
         }
     });
@@ -244,28 +248,8 @@ async function enterRoom(room) {
     // Stop placeholder animations
     stopAllPlaceholderAnimations();
     
-    // Update URL (prefer hash format for simplicity)
-    const url = new URL(window.location);
-    
-    // Clear all existing room indicators
-    url.searchParams.delete('room');
-    url.hash = '';
-    
-    // Set room as hash
-    url.hash = room;
-    
-    // Use try-catch for pushState to handle file:// protocol
-    try {
-        // Replace current state instead of pushing new one
-        window.history.replaceState({}, '', url);
-        // Then push a new state for back button
-        window.history.pushState({ pin: currentRoom }, '', url);
-    } catch (e) {
-        // In file:// protocol, just update hash directly
-        if (window.location.protocol === 'file:') {
-            window.location.hash = room;
-        }
-    }
+    // Update URL and push history state
+    window.location.hash = room;
     
     // Update PIN display
     const digits = room.split('');
@@ -619,20 +603,9 @@ function goToTitleScreen() {
         input.placeholder = '';
     });
     
-    // Clear URL (remove all room indicators)
-    const url = new URL(window.location);
-    url.searchParams.delete('room');
-    url.hash = '';
-    url.pathname = '/';
-    
-    // Use try-catch for pushState to handle file:// protocol
-    try {
-        window.history.pushState({}, '', url);
-    } catch (e) {
-        // In file:// protocol, just update hash
-        if (window.location.protocol === 'file:') {
-            window.location.hash = '';
-        }
+    // Clear URL without triggering popstate
+    if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
     }
     
     // Show title screen
