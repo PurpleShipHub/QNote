@@ -22,6 +22,11 @@ let lastSaved = null;
 let saveTimeout = null;
 let placeholderIntervals = [];
 
+// Push state when entering a pin
+function pushRoomState() {
+    window.history.pushState({ pin: currentRoom }, '', `#${currentRoom}`);
+}
+
 // Clear all browser caches on startup
 function clearAllCaches() {
     if ('caches' in window) {
@@ -123,11 +128,6 @@ function initializeApp() {
             goToTitleScreen();
         }
     });
-    
-    // Push state when entering a pin
-    function pushRoomState() {
-        window.history.pushState({ pin: currentRoom }, '', `#${currentRoom}`);
-    }
     
     // Logo click to go home
     if (noteLogo) {
