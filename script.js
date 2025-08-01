@@ -22,10 +22,6 @@ let lastSaved = null;
 let saveTimeout = null;
 let placeholderIntervals = [];
 
-// Push state when entering a pin
-function pushRoomState() {
-    window.history.pushState({ pin: currentRoom }, '', `#${currentRoom}`);
-}
 
 // Clear all browser caches on startup
 function clearAllCaches() {
@@ -260,16 +256,16 @@ async function enterRoom(room) {
     
     // Use try-catch for pushState to handle file:// protocol
     try {
-        window.history.pushState({}, '', url);
+        // Replace current state instead of pushing new one
+        window.history.replaceState({}, '', url);
+        // Then push a new state for back button
+        window.history.pushState({ pin: currentRoom }, '', url);
     } catch (e) {
         // In file:// protocol, just update hash directly
         if (window.location.protocol === 'file:') {
             window.location.hash = room;
         }
     }
-    
-    // Push state for back button handling
-    pushRoomState();
     
     // Update PIN display
     const digits = room.split('');
