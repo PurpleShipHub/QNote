@@ -3,7 +3,7 @@ const titleScreen = document.getElementById('titleScreen');
 const noteScreen = document.getElementById('noteScreen');
 const pinInputs = document.querySelectorAll('.pin-input');
 const pinDigits = document.querySelectorAll('.pin-digit');
-const randomRoomBtn = document.querySelector('.random-btn'); // 올바른 클래스명
+const randomPinBtn = document.querySelector('.random-btn'); // 랜덤 PIN 버튼
 const backBtn = document.getElementById('backBtn');
 const copyBtn = document.getElementById('copyBtn');
 const saveBtn = document.getElementById('saveBtn');
@@ -17,7 +17,7 @@ const shareBtn = document.querySelector('.share-btn');
 const noteLogo = document.getElementById('noteLogo');
 
 // State
-let currentRoom = '';
+let currentPin = '';
 let lastSaved = null;
 let saveTimeout = null;
 let placeholderIntervals = [];
@@ -76,9 +76,9 @@ function initializeApp() {
         });
     });
 
-    // Random room button
-    if (randomRoomBtn) {
-        randomRoomBtn.addEventListener('click', generateRandomRoom);
+    // Random pin button
+    if (randomPinBtn) {
+        randomPinBtn.addEventListener('click', generateRandomPin);
     }
 
     // Note editor
@@ -118,14 +118,47 @@ function initializeApp() {
         console.log('Share button not found');
     }
     
-    // Handle browser back button
+    // Handle browser back button and hash changes
+    window.addEventListener('hashchange', function(event) {
+        console.log('Hash changed from:', event.oldURL, 'to:', event.newURL);
+        console.log('Current hash:', window.location.hash);
+        console.log('Current PIN:', currentPin);
+        console.log('Note screen active:', noteScreen.classList.contains('active'));
+        
+        // If hash is empty or just '#', go to title screen
+        if (!window.location.hash || window.location.hash === '#') {
+            console.log('Empty hash detected, checking if should go to title screen');
+            if (noteScreen.classList.contains('active')) {
+                console.log('Going to title screen from hash change');
+                goToTitleScreen();
+            }
+        } else {
+            // If hash is a valid PIN, enter that PIN
+            const pin = window.location.hash.substring(1);
+            console.log('Hash has PIN:', pin);
+            if (/^\d{6}$/.test(pin)) {
+                if (pin !== currentPin) {
+                    console.log('Entering different PIN:', pin);
+                    enterPin(pin);
+                } else {
+                    console.log('Same PIN, no action needed');
+                }
+            }
+        }
+    });
+    
+    // Also handle popstate for browser navigation
     window.addEventListener('popstate', function(event) {
         console.log('Popstate event fired', event.state);
-        // If we're on the note screen, go back to home
-        if (window.location.hash && window.location.hash.length > 1) {
-            // Clear the hash
-            window.location.hash = '';
-            goToTitleScreen();
+        console.log('Current URL:', window.location.href);
+        console.log('Current hash:', window.location.hash);
+        
+        // Check if we should go back to title screen
+        if (!window.location.hash || window.location.hash === '#') {
+            if (noteScreen.classList.contains('active')) {
+                console.log('Popstate: Going to title screen');
+                goToTitleScreen();
+            }
         }
     });
     
@@ -134,36 +167,36 @@ function initializeApp() {
         noteLogo.addEventListener('click', goToTitleScreen);
     }
 
-    // Check URL for room number (multiple formats supported)
-    let room = null;
+    // Check URL for pin number (multiple formats supported)
+    let pin = null;
     
     // 1. Check hash format: qnote.io#123456
     if (window.location.hash) {
-        const hashRoom = window.location.hash.substring(1); // Remove # symbol
-        if (/^\d{6}$/.test(hashRoom)) {
-            room = hashRoom;
+        const hashPin = window.location.hash.substring(1); // Remove # symbol
+        if (/^\d{6}$/.test(hashPin)) {
+            pin = hashPin;
         }
     }
     
     // 2. Check path format: qnote.io/123456
-    if (!room && window.location.pathname && window.location.pathname !== '/') {
-        const pathRoom = window.location.pathname.substring(1); // Remove / symbol
-        if (/^\d{6}$/.test(pathRoom)) {
-            room = pathRoom;
+    if (!pin && window.location.pathname && window.location.pathname !== '/') {
+        const pathPin = window.location.pathname.substring(1); // Remove / symbol
+        if (/^\d{6}$/.test(pathPin)) {
+            pin = pathPin;
         }
     }
     
-    // 3. Check query format (legacy): qnote.io?room=123456
-    if (!room) {
+    // 3. Check query format (legacy): qnote.io?pin=123456
+    if (!pin) {
         const urlParams = new URLSearchParams(window.location.search);
-        const queryRoom = urlParams.get('room');
-        if (queryRoom && /^\d{6}$/.test(queryRoom)) {
-            room = queryRoom;
+        const queryPin = urlParams.get('pin') || urlParams.get('room'); // support legacy 'room' param
+        if (queryPin && /^\d{6}$/.test(queryPin)) {
+            pin = queryPin;
         }
     }
     
-    if (room) {
-        enterRoom(room);
+    if (pin) {
+        enterPin(pin);
     }
 }
 
@@ -191,8 +224,8 @@ function handlePinInput(e, index) {
         if (index < pinInputs.length - 1) {
             pinInputs[index + 1].focus();
         } else {
-            // All inputs filled, check room
-            checkRoom();
+            // All inputs filled, check pin
+            checkPin();
         }
     }
 }
@@ -205,7 +238,7 @@ function handlePinKeydown(e, index) {
     
     // Handle Enter
     if (e.key === 'Enter') {
-        checkRoom();
+        checkPin();
     }
 }
 
@@ -219,53 +252,65 @@ function handlePinPaste(e) {
         pinInputs.forEach((input, index) => {
             input.value = digits[index] || '';
         });
-        checkRoom();
+        checkPin();
     }
 }
 
-function generateRandomRoom() {
-    const room = Math.floor(100000 + Math.random() * 900000).toString();
-    const digits = room.split('');
+function generateRandomPin() {
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    const digits = pin.split('');
     
     pinInputs.forEach((input, index) => {
         input.value = digits[index];
     });
     
-    setTimeout(() => checkRoom(), 300);
+    setTimeout(() => checkPin(), 300);
 }
 
-function checkRoom() {
-    const room = Array.from(pinInputs).map(input => input.value).join('');
+function checkPin() {
+    const pin = Array.from(pinInputs).map(input => input.value).join('');
     
-    if (room.length === 6) {
-        enterRoom(room);
+    if (pin.length === 6) {
+        enterPin(pin);
     }
 }
 
-async function enterRoom(room) {
-    currentRoom = room;
+async function enterPin(pin) {
+    console.log('enterPin called with:', pin);
+    currentPin = pin;
     
     // Stop placeholder animations
     stopAllPlaceholderAnimations();
     
-    // Update URL and push history state
-    window.location.hash = room;
+    // Update URL with proper history management
+    const newHash = '#' + pin;
+    if (window.location.hash !== newHash) {
+        console.log('Updating hash from', window.location.hash, 'to', newHash);
+        // Use pushState for new entries, replaceState for updates
+        if (!window.location.hash || window.location.hash === '#') {
+            // Coming from home screen, push new state
+            history.pushState({ pin: pin }, '', newHash);
+        } else {
+            // Switching between PINs, replace state
+            history.replaceState({ pin: pin }, '', newHash);
+        }
+    }
     
     // Update PIN display
-    const digits = room.split('');
+    const digits = pin.split('');
     pinDigits.forEach((digit, index) => {
         digit.textContent = digits[index];
     });
     
-    // Load room data
-    await loadRoomData(room);
+    // Load pin data
+    await loadPinData(pin);
     
     // Show note screen
     titleScreen.classList.remove('active');
     noteScreen.classList.add('active');
 }
 
-async function loadRoomData(room) {
+async function loadPinData(pin) {
     // Clear previous content first - force complete reset
     noteEditor.value = '';
     noteEditor.textContent = '';
@@ -290,7 +335,7 @@ async function loadRoomData(room) {
     
     // Show loading state with specific message
     const loadingMessage = document.querySelector('.loading-message');
-    loadingMessage.textContent = `Loading room ${room}...`;
+    loadingMessage.textContent = `Loading PIN ${pin}...`;
     loadingOverlay.classList.add('active');
     
     // Add minimum loading time for better UX (at least 300ms)
@@ -334,7 +379,7 @@ async function loadRoomData(room) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ room }),
+                body: JSON.stringify({ room: pin }), // API still expects 'room' param
                 cache: 'no-store'
             });
             
@@ -346,7 +391,7 @@ async function loadRoomData(room) {
                 if (data.exists) {
                     console.log(`Successfully loaded existing note, content length: ${content.length}`);
                 } else {
-                    console.log(`Room ${room} is new (file doesn't exist)`);
+                    console.log(`PIN ${pin} is new (file doesn't exist)`);
                 }
             } else {
                 const error = await response.json();
@@ -368,7 +413,7 @@ async function loadRoomData(room) {
     noteEditor.value = '';
     noteEditor.textContent = '';
     
-    // Set the editor content (empty for new rooms is normal)
+    // Set the editor content (empty for new pins is normal)
     console.log(`Setting editor content: "${content}" (length: ${content.length})`);
     noteEditor.value = content;
     
@@ -382,7 +427,7 @@ async function loadRoomData(room) {
         lastSaved = new Date().toISOString();
     } else {
         lastSaved = null;
-        console.log(`Room ${room} is ready for new content`);
+        console.log(`PIN ${pin} is ready for new content`);
     }
     
     // Force refresh the UI to ensure no cached states
@@ -518,7 +563,7 @@ async function saveNote() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                room: currentRoom,
+                room: currentPin, // API still expects 'room' param
                 content: content
             })
         });
@@ -535,7 +580,7 @@ async function saveNote() {
             
             // Mark that we just saved to avoid unnecessary reloads
             window.justSavedTimestamp = Date.now();
-            window.lastSavedRoom = currentRoom; // Store the room for recent check
+            window.lastSavedPin = currentPin; // Store the pin for recent check
         } else {
             const error = await response.json();
             throw new Error(error.error || 'Failed to save note');
@@ -586,9 +631,17 @@ function fallbackCopyToClipboard(text) {
 }
 
 function goToTitleScreen() {
-    console.log('Back button clicked');
-    // Clear current room data
-    currentRoom = '';
+    console.log('goToTitleScreen called');
+    console.log('Current hash before clear:', window.location.hash);
+    
+    // Prevent recursive calls
+    if (titleScreen.classList.contains('active')) {
+        console.log('Already on title screen, skipping');
+        return;
+    }
+    
+    // Clear current pin data
+    currentPin = '';
     noteEditor.value = '';
     lastSaved = null;
     updateCharCount();
@@ -603,18 +656,23 @@ function goToTitleScreen() {
         input.placeholder = '';
     });
     
-    // Clear URL without triggering popstate
-    if (window.location.hash) {
-        history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-    
-    // Show title screen
+    // Show title screen BEFORE clearing URL to avoid triggering events
     noteScreen.classList.remove('active');
     titleScreen.classList.add('active');
     
+    // Clear URL without triggering hashchange event
+    if (window.location.hash) {
+        // Use replaceState to avoid adding to history
+        const newUrl = window.location.pathname + window.location.search;
+        console.log('Clearing hash, new URL:', newUrl);
+        history.replaceState(null, '', newUrl);
+    }
+    
     // Focus first input and restart animation after a small delay
     setTimeout(() => {
-        pinInputs[0].focus();
+        if (pinInputs[0]) {
+            pinInputs[0].focus();
+        }
         startPlaceholderAnimation();
     }, 100);
 }
@@ -622,7 +680,7 @@ function goToTitleScreen() {
 // Share function using Web Share API or clipboard fallback
 function shareNote() {
     console.log('Share button clicked');
-    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}`;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?pin=${currentPin}`;
     const shareData = {
         title: 'QNote - Shared Note',
         text: 'Check out my note on QNote!',
