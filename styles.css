@@ -122,8 +122,8 @@ body {
     letter-spacing: 1px;
 }
 
-/* PIN Input */
-.pin-input-container {
+/* Room Input */
+.room-input-container {
     max-width: 400px;
     margin: 0 auto;
     padding: 2rem;
@@ -170,7 +170,7 @@ body {
     color: #495057;
 }
 
-.pin-number-label {
+.room-number-label {
     text-align: center;
     color: #6c757d;
     font-size: 0.9rem;
@@ -178,7 +178,7 @@ body {
     margin: 1.5rem 0 1rem 0;
 }
 
-.random-pin {
+.random-room {
     text-align: center;
     display: flex;
     justify-content: center;
@@ -254,7 +254,7 @@ body {
     min-height: auto !important;
 }
 
-.pin-info {
+.room-info {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
@@ -282,13 +282,13 @@ body {
     color: #495057;
 }
 
-.pin-info h1 {
+.room-info h1 {
     font-size: 1.5rem;
     color: #495057;
     margin: 0;
 }
 
-.pin-number {
+.room-number {
     color: #212529;
     font-weight: 700;
 }
