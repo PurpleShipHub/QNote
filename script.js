@@ -117,6 +117,18 @@ function initializeApp() {
         console.log('Share button not found');
     }
     
+    // Handle browser back button
+    window.addEventListener('popstate', function(event) {
+        if (noteScreen.style.display === 'block') {
+            goToTitleScreen();
+        }
+    });
+    
+    // Push state when entering a pin
+    function pushRoomState() {
+        window.history.pushState({ pin: currentRoom }, '', `#${currentRoom}`);
+    }
+    
     // Logo click to go home
     if (noteLogo) {
         noteLogo.addEventListener('click', goToTitleScreen);
@@ -255,6 +267,9 @@ async function enterRoom(room) {
             window.location.hash = room;
         }
     }
+    
+    // Push state for back button handling
+    pushRoomState();
     
     // Update PIN display
     const digits = room.split('');
