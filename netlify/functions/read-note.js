@@ -24,18 +24,18 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const { room } = JSON.parse(event.body);
+        const { pin } = JSON.parse(event.body);
         
-        if (!room || !/^\d{6}$/.test(room)) {
+        if (!pin || !/^\d{6}$/.test(pin)) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Invalid room number' })
+                body: JSON.stringify({ error: 'Invalid pin number' })
             };
         }
 
-        // Convert room number to path
-        const digits = room.split('');
+        // Convert pin number to path
+        const digits = pin.split('');
         const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`;
         
         // GitHub API URL
@@ -65,7 +65,7 @@ exports.handler = async (event, context) => {
                 })
             };
         } else if (response.status === 404) {
-            // File doesn't exist yet - this is normal for new rooms
+            // File doesn't exist yet - this is normal for new pins
             return {
                 statusCode: 200,
                 headers,

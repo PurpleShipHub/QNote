@@ -24,22 +24,22 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { room, content } = JSON.parse(event.body);
+    const { pin, content } = JSON.parse(event.body);
     
-    if (!room || content === undefined) {
+    if (!pin || content === undefined) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Room and content are required' })
+        body: JSON.stringify({ error: 'Pin and content are required' })
       };
     }
 
-    // Validate room format (6 digits)
-    if (!/^\d{6}$/.test(room)) {
+    // Validate pin format (6 digits)
+    if (!/^\d{6}$/.test(pin)) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Room must be a 6-digit number' })
+        body: JSON.stringify({ error: 'Pin must be a 6-digit number' })
       };
     }
 
@@ -56,7 +56,7 @@ exports.handler = async (event, context) => {
     // GitHub repository info
     const owner = 'PurpleShipHub'; // GitHub username or organization
     const repo = 'QNote'; // Repository name
-    const digits = room.split('');
+    const digits = pin.split('');
     const path = `${digits[0]}/${digits[1]}/${digits[2]}/${digits[3]}/${digits[4]}/${digits[5]}/Qnote.txt`; // File path in repository
     
     // Get current file (if exists) to get SHA
@@ -91,7 +91,7 @@ exports.handler = async (event, context) => {
 
     // Prepare commit data
     const commitData = {
-      message: fileExists ? `Update note for room ${room}` : `Create note for room ${room}`,
+      message: fileExists ? `Update note for pin ${pin}` : `Create note for pin ${pin}`,
       content: Buffer.from(content).toString('base64'),
       branch: 'main'
     };
