@@ -680,7 +680,7 @@ function goToTitleScreen() {
 // Share function using Web Share API or clipboard fallback
 function shareNote() {
     console.log('Share button clicked');
-    const shareUrl = `${window.location.origin}${window.location.pathname}?pin=${currentPin}`;
+    const shareUrl = `${window.location.origin}${window.location.pathname}#${currentPin}`;
     const shareData = {
         title: 'QNote - Shared Note',
         text: 'Check out my note on QNote!',
