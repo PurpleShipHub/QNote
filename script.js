@@ -67,6 +67,14 @@ function initializeApp() {
     pinInputs.forEach((input, index) => {
         input.addEventListener('input', (e) => handlePinInput(e, index));
         input.addEventListener('keydown', (e) => handlePinKeydown(e, index));
+        // Prevent non-numeric characters from being entered
+        input.addEventListener('keypress', (e) => {
+            const char = String.fromCharCode(e.which || e.keyCode);
+            if (!/[0-9]/.test(char)) {
+                e.preventDefault();
+                return false;
+            }
+        });
         input.addEventListener('paste', handlePinPaste);
         input.addEventListener('focus', stopPlaceholderForInput);
         input.addEventListener('blur', (e) => {
@@ -211,14 +219,18 @@ function showToast(message, type = 'info') {
 }
 
 function handlePinInput(e, index) {
-    const value = e.target.value;
+    let value = e.target.value;
     
-    // Only allow digits
-    if (!/^\d*$/.test(value)) {
-        e.target.value = '';
-        return;
+    // Remove any non-digit characters
+    value = value.replace(/[^\d]/g, '');
+    
+    // Only keep the last digit if multiple digits were entered
+    if (value.length > 1) {
+        value = value.slice(-1);
     }
-
+    
+    e.target.value = value;
+    
     if (value.length === 1) {
         // Move to next input
         if (index < pinInputs.length - 1) {

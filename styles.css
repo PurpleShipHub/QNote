@@ -150,6 +150,14 @@ body {
     background: white;
     transition: all 0.2s ease;
     color: #212529;
+    -moz-appearance: textfield; /* Firefox */
+}
+
+/* Hide spinner for Chrome, Safari, Edge */
+.pin-input::-webkit-outer-spin-button,
+.pin-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .pin-input::placeholder {
