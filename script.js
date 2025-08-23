@@ -79,17 +79,45 @@ function generateQRCode() {
             const canvas = qrContainer.querySelector('canvas');
             
             if (img) {
-                // Remove all forced sizing to use natural dimensions
-                img.style.width = '';
-                img.style.height = '';
-                img.style.maxWidth = '';
-                img.style.maxHeight = '';
-                img.style.minWidth = '';
-                img.style.minHeight = '';
-                
                 const naturalWidth = img.naturalWidth;
                 const naturalHeight = img.naturalHeight;
                 console.log('QR Code natural dimensions:', naturalWidth, 'x', naturalHeight);
+                
+                // Get the QR code version (module count)
+                let moduleCount = 25; // Default to version 2
+                try {
+                    if (qrCodeInstance._oQRCode && qrCodeInstance._oQRCode.moduleCount) {
+                        moduleCount = Math.sqrt(qrCodeInstance._oQRCode.moduleCount);
+                    }
+                } catch (e) {
+                    console.log('Could not determine module count, using default');
+                }
+                
+                console.log('QR Code modules:', moduleCount + 'x' + moduleCount);
+                
+                // Find the best size under 50px that gives integer pixels per module
+                const possibleSizes = [];
+                for (let size = 20; size < 50; size++) {
+                    if (size % moduleCount === 0) {
+                        possibleSizes.push({
+                            size: size,
+                            pixelsPerModule: size / moduleCount
+                        });
+                    }
+                }
+                
+                console.log('Possible sizes without stretching:', possibleSizes);
+                
+                // Use the largest size under 50px
+                const optimalSize = possibleSizes.length > 0 
+                    ? possibleSizes[possibleSizes.length - 1].size 
+                    : moduleCount; // Fallback to 1px per module
+                
+                console.log('Using size:', optimalSize + 'px');
+                
+                // Apply the optimal size
+                img.style.width = optimalSize + 'px';
+                img.style.height = optimalSize + 'px';
             }
             
             if (canvas) {
