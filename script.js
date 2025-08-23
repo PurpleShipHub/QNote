@@ -85,54 +85,38 @@ function generateQRCode() {
                 img.style.height = '42px';
                 img.style.imageRendering = 'pixelated';
                 
-                // Function to fix the edges
-                const fixEdges = () => {
-                    // Create canvas to modify the image
-                    const fixCanvas = document.createElement('canvas');
-                    const ctx = fixCanvas.getContext('2d');
-                    fixCanvas.width = 42;
-                    fixCanvas.height = 42;
+                // Function to crop to 41x41 from top-left
+                const cropImage = () => {
+                    // Create canvas to crop the image
+                    const cropCanvas = document.createElement('canvas');
+                    const ctx = cropCanvas.getContext('2d');
+                    cropCanvas.width = 41;
+                    cropCanvas.height = 41;
                     
-                    // Draw the original image
-                    ctx.drawImage(img, 0, 0, 42, 42);
+                    // Draw only the top-left 41x41 portion of the image
+                    ctx.drawImage(img, 0, 0, 41, 41, 0, 0, 41, 41);
                     
-                    // Get image data
-                    const imageData = ctx.getImageData(0, 0, 42, 42);
-                    const data = imageData.data;
+                    // Create a new image element with the cropped content
+                    const croppedImg = new Image();
+                    croppedImg.style.width = '41px';
+                    croppedImg.style.height = '41px';
+                    croppedImg.style.imageRendering = 'pixelated';
+                    croppedImg.style.imageRendering = '-moz-crisp-edges';
+                    croppedImg.style.imageRendering = 'crisp-edges';
+                    croppedImg.src = cropCanvas.toDataURL('image/png');
                     
-                    // Make the rightmost column white (x = 41)
-                    for (let y = 0; y < 42; y++) {
-                        const idx = (y * 42 + 41) * 4;
-                        data[idx] = 255;     // R
-                        data[idx + 1] = 255; // G
-                        data[idx + 2] = 255; // B
-                        data[idx + 3] = 255; // A
-                    }
+                    // Replace the original image with the cropped one
+                    img.parentNode.replaceChild(croppedImg, img);
                     
-                    // Make the bottom row white (y = 41)
-                    for (let x = 0; x < 42; x++) {
-                        const idx = (41 * 42 + x) * 4;
-                        data[idx] = 255;     // R
-                        data[idx + 1] = 255; // G
-                        data[idx + 2] = 255; // B
-                        data[idx + 3] = 255; // A
-                    }
-                    
-                    // Put the modified image data back
-                    ctx.putImageData(imageData, 0, 0);
-                    
-                    // Update the image source
-                    img.src = fixCanvas.toDataURL('image/png');
-                    
-                    console.log('QR Code fixed: removed right and bottom edges');
+                    console.log('QR Code cropped to 41x41 from top-left');
                 };
                 
-                // Try to fix immediately if image is already loaded
+                // Try to crop immediately if image is already loaded
                 if (img.complete && img.naturalWidth > 0) {
-                    setTimeout(fixEdges, 100);
+                    setTimeout(cropImage, 100);
                 } else {
                     // Otherwise wait for load
-                    img.onload = fixEdges;
+                    img.onload = cropImage;
                 }
                 
                 console.log('QR Code set to 42x42px (Version 1: 21x21 modules, 2px per module)');

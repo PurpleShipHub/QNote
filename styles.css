@@ -305,6 +305,8 @@ body {
 #qrcode {
     display: block;
     flex-shrink: 0;
+    width: 41px;
+    height: 41px;
 }
 
 #qrcode img {
