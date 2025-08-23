@@ -315,7 +315,8 @@ body {
     max-height: 40px !important;
     min-width: 40px !important;
     min-height: 40px !important;
-    object-fit: none !important;
+    object-fit: contain !important;
+    aspect-ratio: 1 / 1 !important;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;

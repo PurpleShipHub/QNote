@@ -68,8 +68,19 @@ function generateQRCode() {
             height: 40,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
+            correctLevel: QRCode.CorrectLevel.M,
+            useSVG: false
         });
+        
+        // Ensure square aspect ratio
+        setTimeout(() => {
+            const img = qrContainer.querySelector('img');
+            if (img) {
+                img.style.width = '40px';
+                img.style.height = '40px';
+                img.style.aspectRatio = '1/1';
+            }
+        }, 10);
         
         console.log('QR code generated for URL:', currentUrl);
     } catch (error) {
