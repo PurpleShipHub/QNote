@@ -61,11 +61,12 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code - let library determine optimal size
+        // Create QR code at 45x45px
+        // This should work well for version 2 QR codes (25x25 modules)
         qrCodeInstance = new QRCode(qrContainer, {
             text: currentUrl,
-            width: 128,
-            height: 128,
+            width: 45,
+            height: 45,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.M,
