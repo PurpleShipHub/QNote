@@ -70,7 +70,8 @@ function generateQRCode() {
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H, // High error correction (30% recovery)
             useSVG: false,
-            typeNumber: 0 // Auto-select version, but prefer smaller versions
+            typeNumber: 0, // Auto-select version, but prefer smaller versions
+            margin: 0 // Remove quiet zone margin
         });
         
         // Ensure square aspect ratio
@@ -96,15 +97,16 @@ function generateQRCode() {
                 console.log('QR Code modules:', moduleCount + 'x' + moduleCount);
                 
                 // Define exact sizes for each QR version to prevent stretching
+                // Accounting for potential 1px border/margin in the library
                 const qrSizeMap = {
-                    21: 42,  // Version 1: 21x21 modules → 42px (2px per module)
-                    25: 50,  // Version 2: 25x25 modules → 50px (2px per module) 
-                    29: 29,  // Version 3: 29x29 modules → 29px (1px per module)
-                    33: 33,  // Version 4: 33x33 modules → 33px (1px per module)
-                    37: 37,  // Version 5: 37x37 modules → 37px (1px per module)
-                    41: 41,  // Version 6: 41x41 modules → 41px (1px per module)
-                    45: 45,  // Version 7: 45x45 modules → 45px (1px per module)
-                    49: 49   // Version 8: 49x49 modules → 49px (1px per module)
+                    21: 40,  // Version 1: 21x21 modules → 40px (compensate for 1px border)
+                    25: 48,  // Version 2: 25x25 modules → 48px (compensate for 1px border) 
+                    29: 28,  // Version 3: 29x29 modules → 28px
+                    33: 32,  // Version 4: 33x33 modules → 32px
+                    37: 36,  // Version 5: 37x37 modules → 36px
+                    41: 40,  // Version 6: 41x41 modules → 40px
+                    45: 44,  // Version 7: 45x45 modules → 44px
+                    49: 48   // Version 8: 49x49 modules → 48px
                 };
                 
                 // Get the optimal size for this module count
