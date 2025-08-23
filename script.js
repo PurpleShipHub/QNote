@@ -40,6 +40,38 @@ function clearAllCaches() {
     }
 }
 
+// Generate QR code for current URL
+let qrCodeInstance = null;
+
+function generateQRCode() {
+    const qrContainer = document.getElementById('qrcode');
+    
+    // Clear existing QR code
+    if (qrCodeInstance) {
+        qrContainer.innerHTML = '';
+        qrCodeInstance = null;
+    }
+    
+    // Generate new QR code
+    const currentUrl = window.location.href;
+    
+    try {
+        qrCodeInstance = new QRCode(qrContainer, {
+            text: currentUrl,
+            width: 40,
+            height: 40,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M,
+            useSVG: false
+        });
+        
+        console.log('QR code generated for URL:', currentUrl);
+    } catch (error) {
+        console.error('Error generating QR code:', error);
+    }
+}
+
 // Auto-resize textarea function
 function autoResizeTextarea() {
     if (noteEditor) {
@@ -166,6 +198,11 @@ function initializeApp() {
             if (noteScreen.classList.contains('active')) {
                 console.log('Popstate: Going to title screen');
                 goToTitleScreen();
+            }
+        } else {
+            // Update QR code if we're on note screen
+            if (noteScreen.classList.contains('active')) {
+                generateQRCode();
             }
         }
     });
@@ -320,6 +357,9 @@ async function enterPin(pin) {
     // Show note screen
     titleScreen.classList.remove('active');
     noteScreen.classList.add('active');
+    
+    // Generate QR code for current URL
+    generateQRCode();
 }
 
 async function loadPinData(pin) {

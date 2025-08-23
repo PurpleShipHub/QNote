@@ -290,6 +290,32 @@ body {
     color: #495057;
 }
 
+/* QR Code Styles */
+.qr-code-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    padding: 4px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+#qrcode {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#qrcode img,
+#qrcode canvas {
+    display: block !important;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
 .room-info h1 {
     font-size: 1.5rem;
     color: #495057;
@@ -516,6 +542,11 @@ body {
     
     .header-actions {
         justify-content: center;
+    }
+    
+    .qr-code-wrapper {
+        margin-left: 8px;
+        padding: 2px;
     }
     
     .modal {
