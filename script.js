@@ -85,8 +85,8 @@ function generateQRCode() {
                 img.style.height = '42px';
                 img.style.imageRendering = 'pixelated';
                 
-                // Wait for image to load then fix the striped pattern
-                img.onload = function() {
+                // Function to fix the edges
+                const fixEdges = () => {
                     // Create canvas to modify the image
                     const fixCanvas = document.createElement('canvas');
                     const ctx = fixCanvas.getContext('2d');
@@ -126,6 +126,14 @@ function generateQRCode() {
                     
                     console.log('QR Code fixed: removed right and bottom edges');
                 };
+                
+                // Try to fix immediately if image is already loaded
+                if (img.complete && img.naturalWidth > 0) {
+                    setTimeout(fixEdges, 100);
+                } else {
+                    // Otherwise wait for load
+                    img.onload = fixEdges;
+                }
                 
                 console.log('QR Code set to 42x42px (Version 1: 21x21 modules, 2px per module)');
             }
