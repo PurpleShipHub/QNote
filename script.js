@@ -61,16 +61,16 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code at 43x43px then crop 1px from right and bottom
+        // Create QR code at 42x42px for clean 2x2 pixel modules
         qrCodeInstance = new QRCode(qrContainer, {
             text: currentUrl,
-            width: 43,
-            height: 43,
+            width: 42,
+            height: 42,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H, // High error correction (30% recovery)
+            correctLevel: QRCode.CorrectLevel.L, // Low error correction for simpler pattern
             useSVG: false,
-            typeNumber: 0, // Auto-select version, but prefer smaller versions
+            typeNumber: 1, // Force Version 1 (21x21 modules) for cleaner appearance
             margin: 0 // Remove quiet zone margin
         });
         
@@ -80,61 +80,12 @@ function generateQRCode() {
             const canvas = qrContainer.querySelector('canvas');
             
             if (img) {
-                const naturalWidth = img.naturalWidth;
-                const naturalHeight = img.naturalHeight;
-                console.log('QR Code natural dimensions:', naturalWidth, 'x', naturalHeight);
+                // Simply set to 42x42 for Version 1 QR codes
+                img.style.width = '42px';
+                img.style.height = '42px';
+                img.style.imageRendering = 'pixelated';
                 
-                // Get the QR code version (module count)
-                let moduleCount = 25; // Default to version 2
-                try {
-                    if (qrCodeInstance._oQRCode && qrCodeInstance._oQRCode.moduleCount) {
-                        moduleCount = Math.sqrt(qrCodeInstance._oQRCode.moduleCount);
-                    }
-                } catch (e) {
-                    console.log('Could not determine module count, using default');
-                }
-                
-                console.log('QR Code modules:', moduleCount + 'x' + moduleCount);
-                
-                // Define exact sizes for each QR version (will be created at 43x43 and cropped to 42x42)
-                const qrSizeMap = {
-                    21: 42,  // Version 1: 21x21 modules → 42px (2px per module)
-                    25: 50,  // Version 2: 25x25 modules → 50px (2px per module) 
-                    29: 29,  // Version 3: 29x29 modules → 29px
-                    33: 33,  // Version 4: 33x33 modules → 33px
-                    37: 37,  // Version 5: 37x37 modules → 37px
-                    41: 41,  // Version 6: 41x41 modules → 41px
-                    45: 45,  // Version 7: 45x45 modules → 45px
-                    49: 49   // Version 8: 49x49 modules → 49px
-                };
-                
-                // Get the optimal size for this module count
-                const optimalSize = qrSizeMap[moduleCount] || 42;
-                
-                console.log('Using size:', optimalSize + 'px');
-                
-                // Crop the QR code by creating a new canvas
-                setTimeout(() => {
-                    // Create a new canvas to crop the image
-                    const cropCanvas = document.createElement('canvas');
-                    const ctx = cropCanvas.getContext('2d');
-                    
-                    // Set canvas size (cropping 1px from right and bottom)
-                    const targetSize = optimalSize;
-                    cropCanvas.width = targetSize;
-                    cropCanvas.height = targetSize;
-                    
-                    // Draw the image cropped
-                    ctx.drawImage(img, 0, 0, targetSize, targetSize, 0, 0, targetSize, targetSize);
-                    
-                    // Replace the image with the cropped version
-                    const croppedUrl = cropCanvas.toDataURL('image/png');
-                    img.src = croppedUrl;
-                    img.style.width = targetSize + 'px';
-                    img.style.height = targetSize + 'px';
-                    
-                    console.log('QR code cropped to ' + targetSize + 'x' + targetSize + 'px');
-                }, 100);
+                console.log('QR Code set to 42x42px (Version 1: 21x21 modules, 2px per module)');
             }
             
             if (canvas) {

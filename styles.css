@@ -316,8 +316,9 @@ body {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
-    filter: contrast(200%) brightness(100%);
-    -webkit-filter: contrast(200%) brightness(100%);
+    -ms-interpolation-mode: nearest-neighbor;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 #qrcode canvas {
