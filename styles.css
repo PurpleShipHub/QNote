@@ -295,21 +295,27 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 12px;
+    margin-left: 8px;
+    margin-right: -4px;
+    flex-shrink: 0;
 }
 
 #qrcode {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     width: 40px;
     height: 40px;
+    flex-shrink: 0;
 }
 
 #qrcode img {
     display: block !important;
     width: 40px !important;
     height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    object-fit: none !important;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
@@ -329,7 +335,7 @@ body {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
 }
 
 .room-number {
