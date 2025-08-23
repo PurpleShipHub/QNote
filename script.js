@@ -95,23 +95,20 @@ function generateQRCode() {
                 
                 console.log('QR Code modules:', moduleCount + 'x' + moduleCount);
                 
-                // Find the best size under 50px that gives integer pixels per module
-                const possibleSizes = [];
-                for (let size = 20; size < 50; size++) {
-                    if (size % moduleCount === 0) {
-                        possibleSizes.push({
-                            size: size,
-                            pixelsPerModule: size / moduleCount
-                        });
-                    }
-                }
+                // Define exact sizes for each QR version to prevent stretching
+                const qrSizeMap = {
+                    21: 42,  // Version 1: 21x21 modules → 42px (2px per module)
+                    25: 50,  // Version 2: 25x25 modules → 50px (2px per module) 
+                    29: 29,  // Version 3: 29x29 modules → 29px (1px per module)
+                    33: 33,  // Version 4: 33x33 modules → 33px (1px per module)
+                    37: 37,  // Version 5: 37x37 modules → 37px (1px per module)
+                    41: 41,  // Version 6: 41x41 modules → 41px (1px per module)
+                    45: 45,  // Version 7: 45x45 modules → 45px (1px per module)
+                    49: 49   // Version 8: 49x49 modules → 49px (1px per module)
+                };
                 
-                console.log('Possible sizes without stretching:', possibleSizes);
-                
-                // Use the largest size under 50px
-                const optimalSize = possibleSizes.length > 0 
-                    ? possibleSizes[possibleSizes.length - 1].size 
-                    : moduleCount; // Fallback to 1px per module
+                // Get the optimal size for this module count
+                const optimalSize = qrSizeMap[moduleCount] || 42;
                 
                 console.log('Using size:', optimalSize + 'px');
                 
