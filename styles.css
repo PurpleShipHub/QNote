@@ -306,14 +306,17 @@ body {
     height: 40px;
 }
 
-#qrcode img,
-#qrcode canvas {
+#qrcode img {
     display: block !important;
     width: 40px !important;
     height: 40px !important;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+}
+
+#qrcode canvas {
+    display: none !important;
 }
 
 .room-info h1 {
