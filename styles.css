@@ -296,21 +296,27 @@ body {
     align-items: center;
     justify-content: center;
     margin-left: 12px;
-    padding: 4px;
+    padding: 6px;
     background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    min-width: 52px;
+    min-height: 52px;
 }
 
 #qrcode {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 40px;
+    height: 40px;
 }
 
 #qrcode img,
 #qrcode canvas {
     display: block !important;
+    width: 40px !important;
+    height: 40px !important;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
@@ -320,6 +326,13 @@ body {
     font-size: 1.5rem;
     color: #495057;
     margin: 0;
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .room-number {

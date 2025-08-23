@@ -46,16 +46,22 @@ let qrCodeInstance = null;
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
     
-    // Clear existing QR code
-    if (qrCodeInstance) {
-        qrContainer.innerHTML = '';
-        qrCodeInstance = null;
+    // Check if QRCode library is loaded
+    if (typeof QRCode === 'undefined') {
+        console.error('QRCode library is not loaded');
+        return;
     }
+    
+    // Clear existing QR code
+    qrContainer.innerHTML = '';
     
     // Generate new QR code
     const currentUrl = window.location.href;
     
+    console.log('Generating QR code for:', currentUrl);
+    
     try {
+        // Create QR code with explicit image rendering
         qrCodeInstance = new QRCode(qrContainer, {
             text: currentUrl,
             width: 40,
@@ -63,10 +69,29 @@ function generateQRCode() {
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.M,
-            useSVG: false
+            useSVG: false,
+            drawer: 'canvas' // Force canvas rendering
         });
         
-        console.log('QR code generated for URL:', currentUrl);
+        // Ensure the image is displayed
+        setTimeout(() => {
+            const canvas = qrContainer.querySelector('canvas');
+            const img = qrContainer.querySelector('img');
+            
+            if (canvas && !img) {
+                // Convert canvas to image
+                const dataUrl = canvas.toDataURL('image/png');
+                const image = new Image();
+                image.src = dataUrl;
+                image.width = 40;
+                image.height = 40;
+                image.style.display = 'block';
+                qrContainer.innerHTML = '';
+                qrContainer.appendChild(image);
+            }
+            
+            console.log('QR code generated for URL:', currentUrl);
+        }, 100);
     } catch (error) {
         console.error('Error generating QR code:', error);
     }
