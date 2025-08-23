@@ -296,12 +296,6 @@ body {
     align-items: center;
     justify-content: center;
     margin-left: 12px;
-    padding: 6px;
-    background: white;
-    border: 2px solid #dee2e6;
-    border-radius: 6px;
-    min-width: 52px;
-    min-height: 52px;
 }
 
 #qrcode {

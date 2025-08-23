@@ -61,37 +61,17 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code with explicit image rendering
+        // Create QR code
         qrCodeInstance = new QRCode(qrContainer, {
             text: currentUrl,
             width: 40,
             height: 40,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M,
-            useSVG: false,
-            drawer: 'canvas' // Force canvas rendering
+            correctLevel: QRCode.CorrectLevel.M
         });
         
-        // Ensure the image is displayed
-        setTimeout(() => {
-            const canvas = qrContainer.querySelector('canvas');
-            const img = qrContainer.querySelector('img');
-            
-            if (canvas && !img) {
-                // Convert canvas to image
-                const dataUrl = canvas.toDataURL('image/png');
-                const image = new Image();
-                image.src = dataUrl;
-                image.width = 40;
-                image.height = 40;
-                image.style.display = 'block';
-                qrContainer.innerHTML = '';
-                qrContainer.appendChild(image);
-            }
-            
-            console.log('QR code generated for URL:', currentUrl);
-        }, 100);
+        console.log('QR code generated for URL:', currentUrl);
     } catch (error) {
         console.error('Error generating QR code:', error);
     }
