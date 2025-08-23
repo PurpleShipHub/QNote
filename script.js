@@ -80,10 +80,68 @@ function generateQRCode() {
             const canvas = qrContainer.querySelector('canvas');
             
             if (img) {
-                // Simply set to 42x42 for Version 1 QR codes
+                // Set to 42x42 for Version 1 QR codes
                 img.style.width = '42px';
                 img.style.height = '42px';
                 img.style.imageRendering = 'pixelated';
+                
+                // Wait for image to load then fix the striped pattern
+                img.onload = function() {
+                    // Create canvas to modify the image
+                    const fixCanvas = document.createElement('canvas');
+                    const ctx = fixCanvas.getContext('2d');
+                    fixCanvas.width = 42;
+                    fixCanvas.height = 42;
+                    
+                    // Draw the original image
+                    ctx.drawImage(img, 0, 0, 42, 42);
+                    
+                    // Get image data
+                    const imageData = ctx.getImageData(0, 0, 42, 42);
+                    const data = imageData.data;
+                    
+                    // Fix striped patterns by checking for alternating pixels
+                    for (let y = 0; y < 42; y++) {
+                        for (let x = 0; x < 42; x++) {
+                            const idx = (y * 42 + x) * 4;
+                            
+                            // Check if this pixel is part of a thin stripe pattern
+                            if (x > 0 && x < 41) {
+                                const leftIdx = (y * 42 + (x - 1)) * 4;
+                                const rightIdx = (y * 42 + (x + 1)) * 4;
+                                
+                                // If current pixel is black between two white pixels (vertical stripe)
+                                if (data[idx] === 0 && data[leftIdx] === 255 && data[rightIdx] === 255) {
+                                    // Make it white
+                                    data[idx] = 255;
+                                    data[idx + 1] = 255;
+                                    data[idx + 2] = 255;
+                                }
+                            }
+                            
+                            if (y > 0 && y < 41) {
+                                const topIdx = ((y - 1) * 42 + x) * 4;
+                                const bottomIdx = ((y + 1) * 42 + x) * 4;
+                                
+                                // If current pixel is black between two white pixels (horizontal stripe)
+                                if (data[idx] === 0 && data[topIdx] === 255 && data[bottomIdx] === 255) {
+                                    // Make it white
+                                    data[idx] = 255;
+                                    data[idx + 1] = 255;
+                                    data[idx + 2] = 255;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Put the modified image data back
+                    ctx.putImageData(imageData, 0, 0);
+                    
+                    // Update the image source
+                    img.src = fixCanvas.toDataURL('image/png');
+                    
+                    console.log('QR Code fixed: removed thin stripes');
+                };
                 
                 console.log('QR Code set to 42x42px (Version 1: 21x21 modules, 2px per module)');
             }
