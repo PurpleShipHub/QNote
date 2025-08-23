@@ -302,21 +302,15 @@ body {
 
 #qrcode {
     display: block;
-    width: 40px;
-    height: 40px;
     flex-shrink: 0;
 }
 
 #qrcode img {
     display: block !important;
-    width: 40px !important;
-    height: 40px !important;
-    max-width: 40px !important;
-    max-height: 40px !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-    object-fit: contain !important;
-    aspect-ratio: 1 / 1 !important;
+    width: auto;
+    height: auto;
+    max-width: 100px;
+    max-height: 100px;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;

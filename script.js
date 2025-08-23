@@ -61,11 +61,11 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code
+        // Create QR code - let library determine optimal size
         qrCodeInstance = new QRCode(qrContainer, {
             text: currentUrl,
-            width: 40,
-            height: 40,
+            width: 128,
+            height: 128,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.M,
@@ -75,12 +75,26 @@ function generateQRCode() {
         // Ensure square aspect ratio
         setTimeout(() => {
             const img = qrContainer.querySelector('img');
+            const canvas = qrContainer.querySelector('canvas');
+            
             if (img) {
-                img.style.width = '40px';
-                img.style.height = '40px';
-                img.style.aspectRatio = '1/1';
+                // Remove all forced sizing to use natural dimensions
+                img.style.width = '';
+                img.style.height = '';
+                img.style.maxWidth = '';
+                img.style.maxHeight = '';
+                img.style.minWidth = '';
+                img.style.minHeight = '';
+                
+                const naturalWidth = img.naturalWidth;
+                const naturalHeight = img.naturalHeight;
+                console.log('QR Code natural dimensions:', naturalWidth, 'x', naturalHeight);
             }
-        }, 10);
+            
+            if (canvas) {
+                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+            }
+        }, 50);
         
         console.log('QR code generated for URL:', currentUrl);
     } catch (error) {
