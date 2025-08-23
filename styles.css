@@ -309,8 +309,10 @@ body {
 
 #qrcode img {
     display: block !important;
-    max-width: 50px;
-    max-height: 50px;
+    box-sizing: content-box !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;

@@ -61,11 +61,11 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code at 42x42px - perfect for Version 1 (21x21 modules, 2px per module)
+        // Create QR code at 41x41px to compensate for visual 1px addition
         qrCodeInstance = new QRCode(qrContainer, {
             text: currentUrl,
-            width: 42,
-            height: 42,
+            width: 41,
+            height: 41,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H, // High error correction (30% recovery)
@@ -97,26 +97,42 @@ function generateQRCode() {
                 console.log('QR Code modules:', moduleCount + 'x' + moduleCount);
                 
                 // Define exact sizes for each QR version to prevent stretching
-                // Accounting for potential 1px border/margin in the library
+                // Subtract 1px to compensate for visual appearance
                 const qrSizeMap = {
-                    21: 40,  // Version 1: 21x21 modules → 40px (compensate for 1px border)
-                    25: 48,  // Version 2: 25x25 modules → 48px (compensate for 1px border) 
-                    29: 28,  // Version 3: 29x29 modules → 28px
-                    33: 32,  // Version 4: 33x33 modules → 32px
-                    37: 36,  // Version 5: 37x37 modules → 36px
-                    41: 40,  // Version 6: 41x41 modules → 40px
-                    45: 44,  // Version 7: 45x45 modules → 44px
-                    49: 48   // Version 8: 49x49 modules → 48px
+                    21: 41,  // Version 1: 21x21 modules → 41px (appears as 42px)
+                    25: 49,  // Version 2: 25x25 modules → 49px (appears as 50px) 
+                    29: 28,  // Version 3: 29x29 modules → 28px (appears as 29px)
+                    33: 32,  // Version 4: 33x33 modules → 32px (appears as 33px)
+                    37: 36,  // Version 5: 37x37 modules → 36px (appears as 37px)
+                    41: 40,  // Version 6: 41x41 modules → 40px (appears as 41px)
+                    45: 44,  // Version 7: 45x45 modules → 44px (appears as 45px)
+                    49: 48   // Version 8: 49x49 modules → 48px (appears as 49px)
                 };
                 
                 // Get the optimal size for this module count
-                const optimalSize = qrSizeMap[moduleCount] || 42;
+                const optimalSize = qrSizeMap[moduleCount] || 41;
                 
                 console.log('Using size:', optimalSize + 'px');
                 
                 // Apply the optimal size
                 img.style.width = optimalSize + 'px';
                 img.style.height = optimalSize + 'px';
+                
+                // Debug: Check actual rendered size
+                setTimeout(() => {
+                    const rect = img.getBoundingClientRect();
+                    console.log('Actual rendered size:', rect.width + 'x' + rect.height);
+                    
+                    // If the image is being stretched, force exact size
+                    if (rect.width !== optimalSize || rect.height !== optimalSize) {
+                        img.style.width = optimalSize + 'px !important';
+                        img.style.height = optimalSize + 'px !important';
+                        img.style.minWidth = optimalSize + 'px';
+                        img.style.minHeight = optimalSize + 'px';
+                        img.style.maxWidth = optimalSize + 'px';
+                        img.style.maxHeight = optimalSize + 'px';
+                    }
+                }, 100);
             }
             
             if (canvas) {
