@@ -66,18 +66,21 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code at 42x42px for clean 2x2 pixel modules
-        qrCodeInstance = new QRCode(qrContainer, {
+        // Try different QR code settings for Android compatibility
+        const qrOptions = {
             text: currentUrl,
-            width: 42,
-            height: 42,
+            width: 84,  // Larger size for better compatibility
+            height: 84,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.L, // Low error correction for simpler pattern
+            correctLevel: QRCode.CorrectLevel.L,
             useSVG: false,
-            typeNumber: 1, // Force Version 1 (21x21 modules) for cleaner appearance
-            margin: 0 // Remove quiet zone margin
-        });
+            typeNumber: 0, // Auto-select
+            margin: 1 // Small margin for better compatibility
+        };
+        
+        console.log('Creating QR code with options:', qrOptions);
+        qrCodeInstance = new QRCode(qrContainer, qrOptions);
         
         // Ensure square aspect ratio
         setTimeout(() => {
@@ -85,77 +88,50 @@ function generateQRCode() {
             const canvas = qrContainer.querySelector('canvas');
             
             if (img) {
-                // Set to 42x42 for Version 1 QR codes
+                console.log('Image found, setting up styles');
+                
+                // Simple resize without cropping for better Android compatibility
                 img.style.width = '42px';
                 img.style.height = '42px';
-                img.style.imageRendering = 'pixelated';
+                img.style.display = 'block';
+                img.style.backgroundColor = 'white';
+                img.style.border = 'none';
+                img.style.outline = 'none';
+                img.style.borderRadius = '2px';
                 
-                // Function to crop to 41x41 from top-left
-                const cropImage = () => {
-                    try {
-                        // Create canvas to crop the image
-                        const cropCanvas = document.createElement('canvas');
-                        const ctx = cropCanvas.getContext('2d');
-                        
-                        if (!ctx) {
-                            console.error('Canvas context not available');
-                            return;
-                        }
-                        
-                        cropCanvas.width = 41;
-                        cropCanvas.height = 41;
-                        
-                        // Draw only the top-left 41x41 portion of the image
-                        ctx.drawImage(img, 0, 0, 41, 41, 0, 0, 41, 41);
-                        
-                        // Create a new image element with the cropped content
-                        const croppedImg = new Image();
-                        croppedImg.style.width = '41px';
-                        croppedImg.style.height = '41px';
-                        croppedImg.style.imageRendering = 'pixelated';
-                        croppedImg.style.imageRendering = '-moz-crisp-edges';
-                        croppedImg.style.imageRendering = 'crisp-edges';
-                        croppedImg.style.imageRendering = '-webkit-crisp-edges';
-                        croppedImg.style.imageRendering = '-o-crisp-edges';
-                        croppedImg.style.msInterpolationMode = 'nearest-neighbor';
-                        
-                        // Add mobile-specific styles
-                        croppedImg.style.display = 'block';
-                        croppedImg.style.border = 'none';
-                        croppedImg.style.outline = 'none';
-                        croppedImg.style.webkitTouchCallout = 'none';
-                        croppedImg.style.webkitUserSelect = 'none';
-                        croppedImg.style.userSelect = 'none';
-                        
-                        croppedImg.src = cropCanvas.toDataURL('image/png');
-                        
-                        // Replace the original image with the cropped one
-                        img.parentNode.replaceChild(croppedImg, img);
-                        
-                        console.log('QR Code cropped to 41x41 from top-left');
-                    } catch (error) {
-                        console.error('Error cropping QR code:', error);
-                        // Fallback: just resize the original image
-                        img.style.width = '41px';
-                        img.style.height = '41px';
-                    }
-                };
+                // Remove complex image-rendering for Android compatibility
+                img.style.imageRendering = 'auto';
                 
-                // Try to crop immediately if image is already loaded
-                if (img.complete && img.naturalWidth > 0) {
-                    setTimeout(cropImage, 100);
-                } else {
-                    // Otherwise wait for load
-                    img.onload = cropImage;
-                }
+                // Mobile-specific styles
+                img.style.webkitTouchCallout = 'none';
+                img.style.webkitUserSelect = 'none';
+                img.style.userSelect = 'none';
+                img.style.webkitTapHighlightColor = 'transparent';
                 
-                console.log('QR Code set to 42x42px (Version 1: 21x21 modules, 2px per module)');
+                console.log('QR Code styled for Android compatibility');
+            } else {
+                console.log('No image found in QR container');
             }
             
             if (canvas) {
                 console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
             }
         }, 50);
+        
+        // Additional debugging after a longer delay
+        setTimeout(() => {
+            const finalImg = qrContainer.querySelector('img');
+            const finalCanvas = qrContainer.querySelector('canvas');
+            console.log('Final QR state check:');
+            console.log('- Container HTML:', qrContainer.innerHTML);
+            console.log('- Image element:', !!finalImg);
+            console.log('- Canvas element:', !!finalCanvas);
+            if (finalImg) {
+                console.log('- Image src length:', finalImg.src.length);
+                console.log('- Image complete:', finalImg.complete);
+                console.log('- Image natural size:', finalImg.naturalWidth + 'x' + finalImg.naturalHeight);
+            }
+        }, 500);
         
         console.log('QR code generated for URL:', currentUrl);
     } catch (error) {
