@@ -45,289 +45,7 @@ let qrCodeInstance = null;
 
 
 
-// QR Code implementation with proper encoding
-class QRCode {
-    constructor() {
-        this.size = 21; // Version 1
-        this.modules = [];
-        this.isFunction = [];
-    }
-
-    // Galois Field operations for Reed-Solomon
-    static gfMul(a, b) {
-        if (a === 0 || b === 0) return 0;
-        return QRCode.gfExp[(QRCode.gfLog[a] + QRCode.gfLog[b]) % 255];
-    }
-
-    static gfDiv(a, b) {
-        if (a === 0) return 0;
-        if (b === 0) throw new Error('Division by zero');
-        return QRCode.gfExp[(QRCode.gfLog[a] - QRCode.gfLog[b] + 255) % 255];
-    }
-
-    // Initialize Galois Field tables
-    static initGF() {
-        if (QRCode.gfExp) return;
-        QRCode.gfExp = new Array(256);
-        QRCode.gfLog = new Array(256);
-        let x = 1;
-        for (let i = 0; i < 255; i++) {
-            QRCode.gfExp[i] = x;
-            QRCode.gfLog[x] = i;
-            x = (x * 2) ^ (x >= 128 ? 0x11d : 0);
-        }
-        QRCode.gfExp[255] = QRCode.gfExp[0];
-    }
-
-    // Reed-Solomon error correction - simplified
-    static rsEncode(data, eccCount) {
-        try {
-            QRCode.initGF();
-            const generator = QRCode.rsGeneratorPoly(eccCount);
-            const result = [...data, ...new Array(eccCount).fill(0)];
-            
-            for (let i = 0; i < data.length; i++) {
-                const coeff = result[i];
-                if (coeff !== 0) {
-                    for (let j = 0; j < generator.length; j++) {
-                        if (i + j < result.length && j < generator.length) {
-                            result[i + j] ^= QRCode.gfMul(generator[j], coeff);
-                        }
-                    }
-                }
-            }
-            
-            return result.slice(data.length);
-        } catch (error) {
-            console.error('Reed-Solomon error:', error);
-            // Return simple ECC pattern as fallback
-            return new Array(eccCount).fill(0).map((_, i) => i * 17 % 256);
-        }
-    }
-
-    static rsGeneratorPoly(degree) {
-        let result = [1];
-        for (let i = 0; i < degree; i++) {
-            const next = new Array(result.length + 1).fill(0);
-            for (let j = 0; j < result.length; j++) {
-                next[j] ^= result[j];
-                next[j + 1] ^= QRCode.gfMul(result[j], QRCode.gfExp[i]);
-            }
-            result = next;
-        }
-        return result;
-    }
-
-    // Encode data - simplified version
-    encodeData(text) {
-        console.log('Encoding text:', text);
-        
-        // For URLs longer than 14 chars, just use first part
-        if (text.length > 14) {
-            text = text.substring(text.lastIndexOf('/') + 1) || text.substring(0, 14);
-            console.log('Shortened text to:', text);
-        }
-        
-        // Simple byte mode encoding
-        const data = [];
-        
-        // Mode indicator (4 bits) - Byte mode = 0100
-        data.push(0x4);
-        
-        // Character count (8 bits for Version 1)
-        data.push(text.length);
-        
-        // Data
-        for (let i = 0; i < text.length; i++) {
-            data.push(text.charCodeAt(i));
-        }
-        
-        // Terminator (4 bits of 0000)
-        data.push(0);
-        
-        // Pad to 19 bytes (152 bits / 8)
-        const padBytes = [0xEC, 0x11];
-        let padIndex = 0;
-        while (data.length < 19) {
-            data.push(padBytes[padIndex % 2]);
-            padIndex++;
-        }
-        
-        console.log('Data before ECC:', data);
-        
-        try {
-            // Add error correction
-            const ecc = QRCode.rsEncode(data, 7); // 7 ECC bytes for Version 1-L
-            const result = [...data, ...ecc];
-            console.log('Final encoded data length:', result.length);
-            return result;
-        } catch (error) {
-            console.error('Error in Reed-Solomon encoding:', error);
-            // Return simple data without ECC as fallback
-            return [...data, 0, 0, 0, 0, 0, 0, 0]; // 7 zero ECC bytes
-        }
-    }
-
-    // Place function patterns
-    setupFunctionPatterns() {
-        this.modules = Array(this.size).fill().map(() => Array(this.size).fill(false));
-        this.isFunction = Array(this.size).fill().map(() => Array(this.size).fill(false));
-        
-        // Finder patterns
-        this.drawFinderPattern(0, 0);
-        this.drawFinderPattern(0, this.size - 7);
-        this.drawFinderPattern(this.size - 7, 0);
-        
-        // Separators
-        this.drawSeparator(0, 0);
-        this.drawSeparator(0, this.size - 7);
-        this.drawSeparator(this.size - 7, 0);
-        
-        // Timing patterns
-        for (let i = 8; i < this.size - 8; i++) {
-            this.setModule(6, i, i % 2 === 0);
-            this.setModule(i, 6, i % 2 === 0);
-            this.isFunction[6][i] = true;
-            this.isFunction[i][6] = true;
-        }
-        
-        // Dark module
-        this.setModule(4 * 1 + 9, 8, true);
-        this.isFunction[4 * 1 + 9][8] = true;
-    }
-
-    drawFinderPattern(x, y) {
-        for (let dy = -1; dy <= 7; dy++) {
-            for (let dx = -1; dx <= 7; dx++) {
-                const xx = x + dx;
-                const yy = y + dy;
-                if (xx >= 0 && xx < this.size && yy >= 0 && yy < this.size) {
-                    const dist = Math.max(Math.abs(dx), Math.abs(dy));
-                    this.setModule(xx, yy, dist !== 1 && dist !== 5);
-                    this.isFunction[xx][yy] = true;
-                }
-            }
-        }
-    }
-
-    drawSeparator(x, y) {
-        for (let dy = -1; dy <= 7; dy++) {
-            for (let dx = -1; dx <= 7; dx++) {
-                const xx = x + dx;
-                const yy = y + dy;
-                if (xx >= 0 && xx < this.size && yy >= 0 && yy < this.size) {
-                    const dist = Math.max(Math.abs(dx), Math.abs(dy));
-                    if (dist === 7) {
-                        this.setModule(xx, yy, false);
-                        this.isFunction[xx][yy] = true;
-                    }
-                }
-            }
-        }
-    }
-
-    setModule(x, y, dark) {
-        if (x >= 0 && x < this.size && y >= 0 && y < this.size) {
-            this.modules[y][x] = dark;
-        }
-    }
-
-    getModule(x, y) {
-        return x >= 0 && x < this.size && y >= 0 && y < this.size && this.modules[y][x];
-    }
-
-    // Place data bits
-    placeData(data) {
-        let bitIndex = 0;
-        const dataBits = [];
-        
-        // Convert bytes to bits
-        for (const byte of data) {
-            for (let i = 7; i >= 0; i--) {
-                dataBits.push((byte >> i) & 1);
-            }
-        }
-        
-        // Place data in zigzag pattern
-        for (let right = this.size - 1; right >= 1; right -= 2) {
-            if (right === 6) right--; // Skip timing column
-            
-            for (let vert = 0; vert < this.size; vert++) {
-                for (let j = 0; j < 2; j++) {
-                    const x = right - j;
-                    const upward = ((right + 1) & 2) === 0;
-                    const y = upward ? this.size - 1 - vert : vert;
-                    
-                    if (!this.isFunction[y][x] && bitIndex < dataBits.length) {
-                        this.modules[y][x] = dataBits[bitIndex] === 1;
-                        bitIndex++;
-                    }
-                }
-            }
-        }
-    }
-
-    // Apply mask pattern
-    applyMask(pattern) {
-        for (let y = 0; y < this.size; y++) {
-            for (let x = 0; x < this.size; x++) {
-                if (!this.isFunction[y][x]) {
-                    let invert = false;
-                    switch (pattern) {
-                        case 0: invert = (x + y) % 2 === 0; break;
-                        case 1: invert = y % 2 === 0; break;
-                        case 2: invert = x % 3 === 0; break;
-                        case 3: invert = (x + y) % 3 === 0; break;
-                        case 4: invert = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; break;
-                        case 5: invert = (x * y) % 2 + (x * y) % 3 === 0; break;
-                        case 6: invert = ((x * y) % 2 + (x * y) % 3) % 2 === 0; break;
-                        case 7: invert = ((x + y) % 2 + (x * y) % 3) % 2 === 0; break;
-                    }
-                    if (invert) {
-                        this.modules[y][x] = !this.modules[y][x];
-                    }
-                }
-            }
-        }
-    }
-
-    // Add format information
-    addFormatInfo(errorCorrectionLevel, maskPattern) {
-        const data = (errorCorrectionLevel << 3) | maskPattern;
-        let rem = data;
-        for (let i = 0; i < 10; i++) {
-            rem = (rem << 1) ^ ((rem >> 9) * 0x537);
-        }
-        const formatBits = ((data << 10) | rem) ^ 0x5412;
-        
-        // Place format bits
-        for (let i = 0; i <= 5; i++) {
-            this.setModule(8, i, ((formatBits >> i) & 1) !== 0);
-        }
-        this.setModule(8, 7, ((formatBits >> 6) & 1) !== 0);
-        this.setModule(8, 8, ((formatBits >> 7) & 1) !== 0);
-        this.setModule(7, 8, ((formatBits >> 8) & 1) !== 0);
-        for (let i = 9; i < 15; i++) {
-            this.setModule(14 - i, 8, ((formatBits >> i) & 1) !== 0);
-        }
-        
-        for (let i = 0; i < 8; i++) {
-            this.setModule(this.size - 1 - i, 8, ((formatBits >> i) & 1) !== 0);
-        }
-        for (let i = 8; i < 15; i++) {
-            this.setModule(8, this.size - 15 + i, ((formatBits >> i) & 1) !== 0);
-        }
-    }
-
-    generate(text) {
-        this.setupFunctionPatterns();
-        const data = this.encodeData(text);
-        this.placeData(data);
-        this.applyMask(0); // Use mask pattern 0
-        this.addFormatInfo(1, 0); // Error correction level L, mask pattern 0
-        return this.modules;
-    }
-}
+// QR Code generation using library
 
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
@@ -338,107 +56,114 @@ function generateQRCode() {
     console.log('Platform:', navigator.platform);
     console.log('Is iOS:', /iPad|iPhone|iPod/.test(navigator.userAgent));
     console.log('Is Android:', /Android/i.test(navigator.userAgent));
-    console.log('Canvas support:', !!document.createElement('canvas').getContext);
+    console.log('QRCode library available:', typeof QRCode !== 'undefined');
     
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
     const currentUrl = window.location.href;
-    console.log('Generating real QR code for:', currentUrl);
+    console.log('Generating QR code for:', currentUrl);
     console.log('URL length:', currentUrl.length);
     
-    // Force use new QR implementation for ALL browsers
+    // Check if QRCode library is available
+    if (typeof QRCode === 'undefined') {
+        console.error('QRCode library not loaded');
+        showFallback();
+        return;
+    }
+    
     try {
-        console.log('Starting QR code generation...');
+        console.log('Using QRCode library...');
         
-        // Test canvas support first
-        const testCanvas = document.createElement('canvas');
-        const testCtx = testCanvas.getContext('2d');
-        if (!testCtx) {
-            throw new Error('Canvas context not available');
-        }
-        console.log('Canvas context available');
-        
-        // Generate QR code matrix
-        console.log('Creating QRCode instance...');
-        const qr = new QRCode();
-        console.log('QRCode instance created');
-        
-        console.log('Generating matrix...');
-        const matrix = qr.generate(currentUrl);
-        console.log('Matrix generated, size:', matrix.length + 'x' + matrix[0].length);
-        
-        // Create canvas
+        // Create canvas element
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
         
-        // Set canvas size (2px per module for 42x42 total)
-        const moduleSize = 2;
-        const canvasSize = matrix.length * moduleSize;
-        canvas.width = canvasSize;
-        canvas.height = canvasSize;
-        console.log('Canvas size set to:', canvasSize + 'x' + canvasSize);
-        
-        // Draw QR code
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvasSize, canvasSize);
-        
-        ctx.fillStyle = '#000000';
-        let blackModules = 0;
-        for (let y = 0; y < matrix.length; y++) {
-            for (let x = 0; x < matrix[y].length; x++) {
-                if (matrix[y][x]) {
-                    ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
-                    blackModules++;
-                }
+        // QR code options for better mobile compatibility
+        const options = {
+            width: 42,
+            height: 42,
+            margin: 0,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            },
+            errorCorrectionLevel: 'M', // Medium error correction
+            type: 'image/png',
+            quality: 1.0,
+            rendererOpts: {
+                quality: 1.0
             }
-        }
-        console.log('Drew', blackModules, 'black modules');
-        
-        // Convert to image
-        const img = new Image();
-        
-        // Force consistent styling for all platforms
-        img.style.cssText = `
-            width: 42px !important;
-            height: 42px !important;
-            display: block !important;
-            background-color: white !important;
-            border: none !important;
-            outline: none !important;
-            border-radius: 2px !important;
-            image-rendering: pixelated !important;
-            image-rendering: -moz-crisp-edges !important;
-            image-rendering: crisp-edges !important;
-            -webkit-touch-callout: none !important;
-            -webkit-user-select: none !important;
-            user-select: none !important;
-            -webkit-tap-highlight-color: transparent !important;
-            object-fit: contain !important;
-            max-width: 42px !important;
-            max-height: 42px !important;
-        `;
-        
-        img.onload = function() {
-            console.log('QR code image loaded successfully');
-            console.log('Image natural size:', img.naturalWidth + 'x' + img.naturalHeight);
         };
         
-        img.onerror = function(e) {
-            console.error('QR code image failed to load:', e);
-            showFallback();
-        };
+        console.log('QR options:', options);
         
-        console.log('Converting canvas to data URL...');
-        const dataUrl = canvas.toDataURL('image/png');
-        console.log('Data URL length:', dataUrl.length);
-        console.log('Data URL prefix:', dataUrl.substring(0, 50));
-        
-        img.src = dataUrl;
-        qrContainer.appendChild(img);
-        
-        console.log('QR code generation completed successfully');
-        return; // Success - exit function
+        // Generate QR code to canvas
+        QRCode.toCanvas(canvas, currentUrl, options, function(error) {
+            if (error) {
+                console.error('QRCode.toCanvas error:', error);
+                showFallback();
+                return;
+            }
+            
+            console.log('QR code generated to canvas successfully');
+            console.log('Canvas size:', canvas.width + 'x' + canvas.height);
+            
+            // Create image from canvas
+            const img = new Image();
+            
+            // Mobile-friendly styling
+            img.style.cssText = `
+                width: 42px !important;
+                height: 42px !important;
+                max-width: 42px !important;
+                max-height: 42px !important;
+                display: block !important;
+                background-color: white !important;
+                border: none !important;
+                outline: none !important;
+                border-radius: 2px !important;
+                image-rendering: pixelated !important;
+                image-rendering: -moz-crisp-edges !important;
+                image-rendering: crisp-edges !important;
+                -webkit-image-rendering: pixelated !important;
+                -webkit-touch-callout: none !important;
+                -webkit-user-select: none !important;
+                user-select: none !important;
+                -webkit-tap-highlight-color: transparent !important;
+                object-fit: contain !important;
+                box-sizing: border-box !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            `;
+            
+            img.onload = function() {
+                console.log('QR code image loaded successfully');
+                console.log('Image natural size:', img.naturalWidth + 'x' + img.naturalHeight);
+            };
+            
+            img.onerror = function(e) {
+                console.error('QR code image failed to load:', e);
+                showFallback();
+            };
+            
+            try {
+                // Convert canvas to data URL with error handling
+                const dataUrl = canvas.toDataURL('image/png');
+                console.log('Data URL created, length:', dataUrl.length);
+                
+                if (!dataUrl || dataUrl.length < 100) {
+                    throw new Error('Invalid data URL generated');
+                }
+                
+                img.src = dataUrl;
+                qrContainer.appendChild(img);
+                
+                console.log('QR code generation completed successfully');
+            } catch (dataUrlError) {
+                console.error('Data URL conversion error:', dataUrlError);
+                showFallback();
+            }
+        });
         
     } catch (error) {
         console.error('Error in QR code generation:', error);
