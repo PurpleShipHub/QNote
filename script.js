@@ -46,96 +46,61 @@ let qrCodeInstance = null;
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
     
-    // Check if QRCode library is loaded
-    if (typeof QRCode === 'undefined') {
-        console.error('QRCode library is not loaded');
-        return;
-    }
-    
     // Log browser info for debugging
     console.log('User Agent:', navigator.userAgent);
-    console.log('Canvas support:', !!document.createElement('canvas').getContext);
     console.log('Is Android:', /Android/i.test(navigator.userAgent));
     
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
-    // Generate new QR code
+    // Generate new QR code using API
     const currentUrl = window.location.href;
     
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Try different QR code settings for Android compatibility
-        const qrOptions = {
-            text: currentUrl,
-            width: 84,  // Larger size for better compatibility
-            height: 84,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.L,
-            useSVG: false,
-            typeNumber: 0, // Auto-select
-            margin: 1 // Small margin for better compatibility
+        // Create QR code using QR Server API (more compatible)
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=42x42&data=${encodeURIComponent(currentUrl)}&ecc=L&margin=0`;
+        
+        console.log('QR API URL:', qrApiUrl);
+        
+        // Create image element
+        const qrImg = new Image();
+        qrImg.crossOrigin = 'anonymous';
+        qrImg.style.width = '42px';
+        qrImg.style.height = '42px';
+        qrImg.style.display = 'block';
+        qrImg.style.backgroundColor = 'white';
+        qrImg.style.border = 'none';
+        qrImg.style.outline = 'none';
+        qrImg.style.borderRadius = '2px';
+        qrImg.style.imageRendering = 'auto';
+        
+        // Mobile-specific styles
+        qrImg.style.webkitTouchCallout = 'none';
+        qrImg.style.webkitUserSelect = 'none';
+        qrImg.style.userSelect = 'none';
+        qrImg.style.webkitTapHighlightColor = 'transparent';
+        
+        qrImg.onload = function() {
+            console.log('QR code image loaded successfully');
+            console.log('Image dimensions:', qrImg.naturalWidth + 'x' + qrImg.naturalHeight);
         };
         
-        console.log('Creating QR code with options:', qrOptions);
-        qrCodeInstance = new QRCode(qrContainer, qrOptions);
+        qrImg.onerror = function() {
+            console.error('Failed to load QR code image');
+            // Fallback: show text instead
+            qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
+        };
         
-        // Ensure square aspect ratio
-        setTimeout(() => {
-            const img = qrContainer.querySelector('img');
-            const canvas = qrContainer.querySelector('canvas');
-            
-            if (img) {
-                console.log('Image found, setting up styles');
-                
-                // Simple resize without cropping for better Android compatibility
-                img.style.width = '42px';
-                img.style.height = '42px';
-                img.style.display = 'block';
-                img.style.backgroundColor = 'white';
-                img.style.border = 'none';
-                img.style.outline = 'none';
-                img.style.borderRadius = '2px';
-                
-                // Remove complex image-rendering for Android compatibility
-                img.style.imageRendering = 'auto';
-                
-                // Mobile-specific styles
-                img.style.webkitTouchCallout = 'none';
-                img.style.webkitUserSelect = 'none';
-                img.style.userSelect = 'none';
-                img.style.webkitTapHighlightColor = 'transparent';
-                
-                console.log('QR Code styled for Android compatibility');
-            } else {
-                console.log('No image found in QR container');
-            }
-            
-            if (canvas) {
-                console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
-            }
-        }, 50);
+        qrImg.src = qrApiUrl;
+        qrContainer.appendChild(qrImg);
         
-        // Additional debugging after a longer delay
-        setTimeout(() => {
-            const finalImg = qrContainer.querySelector('img');
-            const finalCanvas = qrContainer.querySelector('canvas');
-            console.log('Final QR state check:');
-            console.log('- Container HTML:', qrContainer.innerHTML);
-            console.log('- Image element:', !!finalImg);
-            console.log('- Canvas element:', !!finalCanvas);
-            if (finalImg) {
-                console.log('- Image src length:', finalImg.src.length);
-                console.log('- Image complete:', finalImg.complete);
-                console.log('- Image natural size:', finalImg.naturalWidth + 'x' + finalImg.naturalHeight);
-            }
-        }, 500);
-        
-        console.log('QR code generated for URL:', currentUrl);
+        console.log('QR code image created');
     } catch (error) {
         console.error('Error generating QR code:', error);
+        // Fallback: show placeholder
+        qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
     }
 }
 
