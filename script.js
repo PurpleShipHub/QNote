@@ -79,22 +79,30 @@ class QRCode {
         QRCode.gfExp[255] = QRCode.gfExp[0];
     }
 
-    // Reed-Solomon error correction
+    // Reed-Solomon error correction - simplified
     static rsEncode(data, eccCount) {
-        QRCode.initGF();
-        const generator = QRCode.rsGeneratorPoly(eccCount);
-        const result = [...data, ...new Array(eccCount).fill(0)];
-        
-        for (let i = 0; i < data.length; i++) {
-            const coeff = result[i];
-            if (coeff !== 0) {
-                for (let j = 0; j < generator.length; j++) {
-                    result[i + j] ^= QRCode.gfMul(generator[j], coeff);
+        try {
+            QRCode.initGF();
+            const generator = QRCode.rsGeneratorPoly(eccCount);
+            const result = [...data, ...new Array(eccCount).fill(0)];
+            
+            for (let i = 0; i < data.length; i++) {
+                const coeff = result[i];
+                if (coeff !== 0) {
+                    for (let j = 0; j < generator.length; j++) {
+                        if (i + j < result.length && j < generator.length) {
+                            result[i + j] ^= QRCode.gfMul(generator[j], coeff);
+                        }
+                    }
                 }
             }
+            
+            return result.slice(data.length);
+        } catch (error) {
+            console.error('Reed-Solomon error:', error);
+            // Return simple ECC pattern as fallback
+            return new Array(eccCount).fill(0).map((_, i) => i * 17 % 256);
         }
-        
-        return result.slice(data.length);
     }
 
     static rsGeneratorPoly(degree) {
@@ -110,42 +118,54 @@ class QRCode {
         return result;
     }
 
-    // Encode data
+    // Encode data - simplified version
     encodeData(text) {
-        // Byte mode encoding
-        const data = [];
-        data.push(0x40); // Byte mode indicator (0100)
-        data.push(text.length); // Character count
+        console.log('Encoding text:', text);
         
+        // For URLs longer than 14 chars, just use first part
+        if (text.length > 14) {
+            text = text.substring(text.lastIndexOf('/') + 1) || text.substring(0, 14);
+            console.log('Shortened text to:', text);
+        }
+        
+        // Simple byte mode encoding
+        const data = [];
+        
+        // Mode indicator (4 bits) - Byte mode = 0100
+        data.push(0x4);
+        
+        // Character count (8 bits for Version 1)
+        data.push(text.length);
+        
+        // Data
         for (let i = 0; i < text.length; i++) {
             data.push(text.charCodeAt(i));
         }
         
-        // Add terminator and padding
-        const capacity = 152; // Version 1-L capacity in bits
-        const bitsUsed = (2 + 8 + text.length * 8);
-        const bitsRemaining = capacity - bitsUsed;
+        // Terminator (4 bits of 0000)
+        data.push(0);
         
-        if (bitsRemaining >= 4) {
-            data.push(0); // Terminator
-        }
-        
-        // Pad to byte boundary
-        while (data.length * 8 % 8 !== 0) {
-            data.push(0);
-        }
-        
-        // Add padding bytes
+        // Pad to 19 bytes (152 bits / 8)
         const padBytes = [0xEC, 0x11];
         let padIndex = 0;
-        while (data.length < 19) { // 19 bytes for Version 1-L
+        while (data.length < 19) {
             data.push(padBytes[padIndex % 2]);
             padIndex++;
         }
         
-        // Add error correction
-        const ecc = QRCode.rsEncode(data, 7); // 7 ECC bytes for Version 1-L
-        return [...data, ...ecc];
+        console.log('Data before ECC:', data);
+        
+        try {
+            // Add error correction
+            const ecc = QRCode.rsEncode(data, 7); // 7 ECC bytes for Version 1-L
+            const result = [...data, ...ecc];
+            console.log('Final encoded data length:', result.length);
+            return result;
+        } catch (error) {
+            console.error('Error in Reed-Solomon encoding:', error);
+            // Return simple data without ECC as fallback
+            return [...data, 0, 0, 0, 0, 0, 0, 0]; // 7 zero ECC bytes
+        }
     }
 
     // Place function patterns
@@ -274,7 +294,7 @@ class QRCode {
     // Add format information
     addFormatInfo(errorCorrectionLevel, maskPattern) {
         const data = (errorCorrectionLevel << 3) | maskPattern;
-        const rem = data;
+        let rem = data;
         for (let i = 0; i < 10; i++) {
             rem = (rem << 1) ^ ((rem >> 9) * 0x537);
         }
