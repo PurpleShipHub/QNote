@@ -259,7 +259,7 @@ body {
     justify-content: space-between !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    min-height: auto !important;
+    min-height: 60px !important;
 }
 
 .room-info {
@@ -276,13 +276,15 @@ body {
     border: none !important;
     color: #6c757d !important;
     cursor: pointer !important;
-    padding: 8px !important;
+    padding: 10px !important;
     border-radius: 6px !important;
     transition: all 0.2s ease !important;
     flex-shrink: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    width: 42px !important;
+    height: 42px !important;
 }
 
 .share-btn:hover {
@@ -295,8 +297,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 4px;
-    margin-right: -2px;
+    margin-left: 0;
+    margin-right: 0;
     flex-shrink: 0;
     padding: 4px;
     background: white;
@@ -365,7 +367,8 @@ body {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 8px;
+    height: 100%;
 }
 
 .room-number {
@@ -373,11 +376,7 @@ body {
     font-weight: 700;
 }
 
-.header-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
+
 
 .btn {
     padding: 8px 16px;
