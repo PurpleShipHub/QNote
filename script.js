@@ -56,7 +56,7 @@ function generateQRCode() {
     console.log('Platform:', navigator.platform);
     console.log('Is iOS:', /iPad|iPhone|iPod/.test(navigator.userAgent));
     console.log('Is Android:', /Android/i.test(navigator.userAgent));
-    console.log('QRCode library available:', typeof QRCode !== 'undefined');
+    console.log('QRious library available:', typeof QRious !== 'undefined');
     
     // Clear existing QR code
     qrContainer.innerHTML = '';
@@ -65,105 +65,88 @@ function generateQRCode() {
     console.log('Generating QR code for:', currentUrl);
     console.log('URL length:', currentUrl.length);
     
-    // Check if QRCode library is available
-    if (typeof QRCode === 'undefined') {
-        console.error('QRCode library not loaded');
+    // Check if QRious library is available
+    if (typeof QRious === 'undefined') {
+        console.error('QRious library not loaded');
         showFallback();
         return;
     }
     
     try {
-        console.log('Using QRCode library...');
+        console.log('Using QRious library...');
         
-        // Create canvas element
-        const canvas = document.createElement('canvas');
+        // Create QR code using QRious
+        const qr = new QRious({
+            value: currentUrl,
+            size: 42,
+            level: 'M', // Medium error correction
+            background: '#ffffff',
+            foreground: '#000000',
+            padding: 0
+        });
         
-        // QR code options for better mobile compatibility
-        const options = {
-            width: 42,
-            height: 42,
-            margin: 0,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            },
-            errorCorrectionLevel: 'M', // Medium error correction
-            type: 'image/png',
-            quality: 1.0,
-            rendererOpts: {
-                quality: 1.0
-            }
+        console.log('QRious options set');
+        
+        // Get the canvas element from QRious
+        const canvas = qr.canvas;
+        console.log('QR code generated to canvas successfully');
+        console.log('Canvas size:', canvas.width + 'x' + canvas.height);
+        
+        // Create image from canvas
+        const img = new Image();
+        
+        // Mobile-friendly styling
+        img.style.cssText = `
+            width: 42px !important;
+            height: 42px !important;
+            max-width: 42px !important;
+            max-height: 42px !important;
+            display: block !important;
+            background-color: white !important;
+            border: none !important;
+            outline: none !important;
+            border-radius: 2px !important;
+            image-rendering: pixelated !important;
+            image-rendering: -moz-crisp-edges !important;
+            image-rendering: crisp-edges !important;
+            -webkit-image-rendering: pixelated !important;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            object-fit: contain !important;
+            box-sizing: border-box !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        `;
+        
+        img.onload = function() {
+            console.log('QR code image loaded successfully');
+            console.log('Image natural size:', img.naturalWidth + 'x' + img.naturalHeight);
         };
         
-        console.log('QR options:', options);
+        img.onerror = function(e) {
+            console.error('QR code image failed to load:', e);
+            showFallback();
+        };
         
-        // Generate QR code to canvas
-        QRCode.toCanvas(canvas, currentUrl, options, function(error) {
-            if (error) {
-                console.error('QRCode.toCanvas error:', error);
-                showFallback();
-                return;
+        try {
+            // Convert canvas to data URL with error handling
+            const dataUrl = canvas.toDataURL('image/png');
+            console.log('Data URL created, length:', dataUrl.length);
+            
+            if (!dataUrl || dataUrl.length < 100) {
+                throw new Error('Invalid data URL generated');
             }
             
-            console.log('QR code generated to canvas successfully');
-            console.log('Canvas size:', canvas.width + 'x' + canvas.height);
+            img.src = dataUrl;
+            qrContainer.appendChild(img);
             
-            // Create image from canvas
-            const img = new Image();
-            
-            // Mobile-friendly styling
-            img.style.cssText = `
-                width: 42px !important;
-                height: 42px !important;
-                max-width: 42px !important;
-                max-height: 42px !important;
-                display: block !important;
-                background-color: white !important;
-                border: none !important;
-                outline: none !important;
-                border-radius: 2px !important;
-                image-rendering: pixelated !important;
-                image-rendering: -moz-crisp-edges !important;
-                image-rendering: crisp-edges !important;
-                -webkit-image-rendering: pixelated !important;
-                -webkit-touch-callout: none !important;
-                -webkit-user-select: none !important;
-                user-select: none !important;
-                -webkit-tap-highlight-color: transparent !important;
-                object-fit: contain !important;
-                box-sizing: border-box !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            `;
-            
-            img.onload = function() {
-                console.log('QR code image loaded successfully');
-                console.log('Image natural size:', img.naturalWidth + 'x' + img.naturalHeight);
-            };
-            
-            img.onerror = function(e) {
-                console.error('QR code image failed to load:', e);
-                showFallback();
-            };
-            
-            try {
-                // Convert canvas to data URL with error handling
-                const dataUrl = canvas.toDataURL('image/png');
-                console.log('Data URL created, length:', dataUrl.length);
-                
-                if (!dataUrl || dataUrl.length < 100) {
-                    throw new Error('Invalid data URL generated');
-                }
-                
-                img.src = dataUrl;
-                qrContainer.appendChild(img);
-                
-                console.log('QR code generation completed successfully');
-            } catch (dataUrlError) {
-                console.error('Data URL conversion error:', dataUrlError);
-                showFallback();
-            }
-        });
+            console.log('QR code generation completed successfully');
+        } catch (dataUrlError) {
+            console.error('Data URL conversion error:', dataUrlError);
+            showFallback();
+        }
         
     } catch (error) {
         console.error('Error in QR code generation:', error);
