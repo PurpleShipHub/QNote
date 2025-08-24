@@ -579,19 +579,47 @@ body {
     }
     
     .note-header {
-        padding: 1rem;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
+        padding: 0.75rem 1.5rem !important;
+        min-height: 50px !important;
+        flex-direction: row !important;
+        gap: 0 !important;
+        align-items: center !important;
+        justify-content: space-between !important;
     }
     
     .header-actions {
-        justify-content: center;
+        gap: 6px !important;
+        justify-content: flex-end !important;
+    }
+    
+    .share-btn {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 8px !important;
+    }
+    
+    .share-btn svg {
+        width: 18px !important;
+        height: 18px !important;
     }
     
     .qr-code-wrapper {
-        margin-left: 8px;
-        padding: 2px;
+        width: 42px !important;
+        height: 42px !important;
+        padding: 3px !important;
+        margin: 0 !important;
+    }
+    
+    #qrcode {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    #qrcode img {
+        width: 36px !important;
+        height: 36px !important;
+        max-width: 36px !important;
+        max-height: 36px !important;
     }
     
     .modal {

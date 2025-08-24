@@ -75,10 +75,13 @@ function generateQRCode() {
     try {
         console.log('Using QRious library...');
         
-        // Create QR code using QRious
+        // Create QR code using QRious - adjust size for mobile
+        const isMobile = window.innerWidth <= 768;
+        const qrSize = isMobile ? 36 : 42;
+        
         const qr = new QRious({
             value: currentUrl,
-            size: 42,
+            size: qrSize,
             level: 'M', // Medium error correction
             background: '#ffffff',
             foreground: '#000000',
@@ -95,12 +98,13 @@ function generateQRCode() {
         // Create image from canvas
         const img = new Image();
         
-        // Mobile-friendly styling
+        // Mobile-friendly styling with responsive size
+        const imgSize = isMobile ? '36px' : '42px';
         img.style.cssText = `
-            width: 42px !important;
-            height: 42px !important;
-            max-width: 42px !important;
-            max-height: 42px !important;
+            width: ${imgSize} !important;
+            height: ${imgSize} !important;
+            max-width: ${imgSize} !important;
+            max-height: ${imgSize} !important;
             display: block !important;
             background-color: white !important;
             border: none !important;
