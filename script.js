@@ -45,61 +45,338 @@ let qrCodeInstance = null;
 
 
 
+// QR Code implementation with proper encoding
+class QRCode {
+    constructor() {
+        this.size = 21; // Version 1
+        this.modules = [];
+        this.isFunction = [];
+    }
+
+    // Galois Field operations for Reed-Solomon
+    static gfMul(a, b) {
+        if (a === 0 || b === 0) return 0;
+        return QRCode.gfExp[(QRCode.gfLog[a] + QRCode.gfLog[b]) % 255];
+    }
+
+    static gfDiv(a, b) {
+        if (a === 0) return 0;
+        if (b === 0) throw new Error('Division by zero');
+        return QRCode.gfExp[(QRCode.gfLog[a] - QRCode.gfLog[b] + 255) % 255];
+    }
+
+    // Initialize Galois Field tables
+    static initGF() {
+        if (QRCode.gfExp) return;
+        QRCode.gfExp = new Array(256);
+        QRCode.gfLog = new Array(256);
+        let x = 1;
+        for (let i = 0; i < 255; i++) {
+            QRCode.gfExp[i] = x;
+            QRCode.gfLog[x] = i;
+            x = (x * 2) ^ (x >= 128 ? 0x11d : 0);
+        }
+        QRCode.gfExp[255] = QRCode.gfExp[0];
+    }
+
+    // Reed-Solomon error correction
+    static rsEncode(data, eccCount) {
+        QRCode.initGF();
+        const generator = QRCode.rsGeneratorPoly(eccCount);
+        const result = [...data, ...new Array(eccCount).fill(0)];
+        
+        for (let i = 0; i < data.length; i++) {
+            const coeff = result[i];
+            if (coeff !== 0) {
+                for (let j = 0; j < generator.length; j++) {
+                    result[i + j] ^= QRCode.gfMul(generator[j], coeff);
+                }
+            }
+        }
+        
+        return result.slice(data.length);
+    }
+
+    static rsGeneratorPoly(degree) {
+        let result = [1];
+        for (let i = 0; i < degree; i++) {
+            const next = new Array(result.length + 1).fill(0);
+            for (let j = 0; j < result.length; j++) {
+                next[j] ^= result[j];
+                next[j + 1] ^= QRCode.gfMul(result[j], QRCode.gfExp[i]);
+            }
+            result = next;
+        }
+        return result;
+    }
+
+    // Encode data
+    encodeData(text) {
+        // Byte mode encoding
+        const data = [];
+        data.push(0x40); // Byte mode indicator (0100)
+        data.push(text.length); // Character count
+        
+        for (let i = 0; i < text.length; i++) {
+            data.push(text.charCodeAt(i));
+        }
+        
+        // Add terminator and padding
+        const capacity = 152; // Version 1-L capacity in bits
+        const bitsUsed = (2 + 8 + text.length * 8);
+        const bitsRemaining = capacity - bitsUsed;
+        
+        if (bitsRemaining >= 4) {
+            data.push(0); // Terminator
+        }
+        
+        // Pad to byte boundary
+        while (data.length * 8 % 8 !== 0) {
+            data.push(0);
+        }
+        
+        // Add padding bytes
+        const padBytes = [0xEC, 0x11];
+        let padIndex = 0;
+        while (data.length < 19) { // 19 bytes for Version 1-L
+            data.push(padBytes[padIndex % 2]);
+            padIndex++;
+        }
+        
+        // Add error correction
+        const ecc = QRCode.rsEncode(data, 7); // 7 ECC bytes for Version 1-L
+        return [...data, ...ecc];
+    }
+
+    // Place function patterns
+    setupFunctionPatterns() {
+        this.modules = Array(this.size).fill().map(() => Array(this.size).fill(false));
+        this.isFunction = Array(this.size).fill().map(() => Array(this.size).fill(false));
+        
+        // Finder patterns
+        this.drawFinderPattern(0, 0);
+        this.drawFinderPattern(0, this.size - 7);
+        this.drawFinderPattern(this.size - 7, 0);
+        
+        // Separators
+        this.drawSeparator(0, 0);
+        this.drawSeparator(0, this.size - 7);
+        this.drawSeparator(this.size - 7, 0);
+        
+        // Timing patterns
+        for (let i = 8; i < this.size - 8; i++) {
+            this.setModule(6, i, i % 2 === 0);
+            this.setModule(i, 6, i % 2 === 0);
+            this.isFunction[6][i] = true;
+            this.isFunction[i][6] = true;
+        }
+        
+        // Dark module
+        this.setModule(4 * 1 + 9, 8, true);
+        this.isFunction[4 * 1 + 9][8] = true;
+    }
+
+    drawFinderPattern(x, y) {
+        for (let dy = -1; dy <= 7; dy++) {
+            for (let dx = -1; dx <= 7; dx++) {
+                const xx = x + dx;
+                const yy = y + dy;
+                if (xx >= 0 && xx < this.size && yy >= 0 && yy < this.size) {
+                    const dist = Math.max(Math.abs(dx), Math.abs(dy));
+                    this.setModule(xx, yy, dist !== 1 && dist !== 5);
+                    this.isFunction[xx][yy] = true;
+                }
+            }
+        }
+    }
+
+    drawSeparator(x, y) {
+        for (let dy = -1; dy <= 7; dy++) {
+            for (let dx = -1; dx <= 7; dx++) {
+                const xx = x + dx;
+                const yy = y + dy;
+                if (xx >= 0 && xx < this.size && yy >= 0 && yy < this.size) {
+                    const dist = Math.max(Math.abs(dx), Math.abs(dy));
+                    if (dist === 7) {
+                        this.setModule(xx, yy, false);
+                        this.isFunction[xx][yy] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    setModule(x, y, dark) {
+        if (x >= 0 && x < this.size && y >= 0 && y < this.size) {
+            this.modules[y][x] = dark;
+        }
+    }
+
+    getModule(x, y) {
+        return x >= 0 && x < this.size && y >= 0 && y < this.size && this.modules[y][x];
+    }
+
+    // Place data bits
+    placeData(data) {
+        let bitIndex = 0;
+        const dataBits = [];
+        
+        // Convert bytes to bits
+        for (const byte of data) {
+            for (let i = 7; i >= 0; i--) {
+                dataBits.push((byte >> i) & 1);
+            }
+        }
+        
+        // Place data in zigzag pattern
+        for (let right = this.size - 1; right >= 1; right -= 2) {
+            if (right === 6) right--; // Skip timing column
+            
+            for (let vert = 0; vert < this.size; vert++) {
+                for (let j = 0; j < 2; j++) {
+                    const x = right - j;
+                    const upward = ((right + 1) & 2) === 0;
+                    const y = upward ? this.size - 1 - vert : vert;
+                    
+                    if (!this.isFunction[y][x] && bitIndex < dataBits.length) {
+                        this.modules[y][x] = dataBits[bitIndex] === 1;
+                        bitIndex++;
+                    }
+                }
+            }
+        }
+    }
+
+    // Apply mask pattern
+    applyMask(pattern) {
+        for (let y = 0; y < this.size; y++) {
+            for (let x = 0; x < this.size; x++) {
+                if (!this.isFunction[y][x]) {
+                    let invert = false;
+                    switch (pattern) {
+                        case 0: invert = (x + y) % 2 === 0; break;
+                        case 1: invert = y % 2 === 0; break;
+                        case 2: invert = x % 3 === 0; break;
+                        case 3: invert = (x + y) % 3 === 0; break;
+                        case 4: invert = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; break;
+                        case 5: invert = (x * y) % 2 + (x * y) % 3 === 0; break;
+                        case 6: invert = ((x * y) % 2 + (x * y) % 3) % 2 === 0; break;
+                        case 7: invert = ((x + y) % 2 + (x * y) % 3) % 2 === 0; break;
+                    }
+                    if (invert) {
+                        this.modules[y][x] = !this.modules[y][x];
+                    }
+                }
+            }
+        }
+    }
+
+    // Add format information
+    addFormatInfo(errorCorrectionLevel, maskPattern) {
+        const data = (errorCorrectionLevel << 3) | maskPattern;
+        const rem = data;
+        for (let i = 0; i < 10; i++) {
+            rem = (rem << 1) ^ ((rem >> 9) * 0x537);
+        }
+        const formatBits = ((data << 10) | rem) ^ 0x5412;
+        
+        // Place format bits
+        for (let i = 0; i <= 5; i++) {
+            this.setModule(8, i, ((formatBits >> i) & 1) !== 0);
+        }
+        this.setModule(8, 7, ((formatBits >> 6) & 1) !== 0);
+        this.setModule(8, 8, ((formatBits >> 7) & 1) !== 0);
+        this.setModule(7, 8, ((formatBits >> 8) & 1) !== 0);
+        for (let i = 9; i < 15; i++) {
+            this.setModule(14 - i, 8, ((formatBits >> i) & 1) !== 0);
+        }
+        
+        for (let i = 0; i < 8; i++) {
+            this.setModule(this.size - 1 - i, 8, ((formatBits >> i) & 1) !== 0);
+        }
+        for (let i = 8; i < 15; i++) {
+            this.setModule(8, this.size - 15 + i, ((formatBits >> i) & 1) !== 0);
+        }
+    }
+
+    generate(text) {
+        this.setupFunctionPatterns();
+        const data = this.encodeData(text);
+        this.placeData(data);
+        this.applyMask(0); // Use mask pattern 0
+        this.addFormatInfo(1, 0); // Error correction level L, mask pattern 0
+        return this.modules;
+    }
+}
+
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
-    
-    // Log browser info for debugging
-    console.log('User Agent:', navigator.userAgent);
-    console.log('Is Android:', /Android/i.test(navigator.userAgent));
     
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
-    // Generate new QR code
     const currentUrl = window.location.href;
-    
-    console.log('Generating QR code for:', currentUrl);
+    console.log('Generating real QR code for:', currentUrl);
     
     try {
-        // Use Google Charts API for real QR codes
-        const qrApiUrl = `https://chart.googleapis.com/chart?chs=42x42&cht=qr&chl=${encodeURIComponent(currentUrl)}&choe=UTF-8`;
+        // Generate QR code matrix
+        const qr = new QRCode();
+        const matrix = qr.generate(currentUrl);
         
-        console.log('Google Charts QR API URL:', qrApiUrl);
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
         
-        // Create image element
-        const qrImg = new Image();
-        qrImg.style.width = '42px';
-        qrImg.style.height = '42px';
-        qrImg.style.display = 'block';
-        qrImg.style.backgroundColor = 'white';
-        qrImg.style.border = 'none';
-        qrImg.style.outline = 'none';
-        qrImg.style.borderRadius = '2px';
-        qrImg.style.imageRendering = 'pixelated';
+        if (!ctx) {
+            throw new Error('Canvas not supported');
+        }
+        
+        // Set canvas size (2px per module for 42x42 total)
+        const moduleSize = 2;
+        const canvasSize = matrix.length * moduleSize;
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        
+        // Draw QR code
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        
+        ctx.fillStyle = '#000000';
+        for (let y = 0; y < matrix.length; y++) {
+            for (let x = 0; x < matrix[y].length; x++) {
+                if (matrix[y][x]) {
+                    ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+                }
+            }
+        }
+        
+        // Convert to image
+        const img = new Image();
+        img.style.width = '42px';
+        img.style.height = '42px';
+        img.style.display = 'block';
+        img.style.backgroundColor = 'white';
+        img.style.border = 'none';
+        img.style.outline = 'none';
+        img.style.borderRadius = '2px';
+        img.style.imageRendering = 'pixelated';
         
         // Mobile-specific styles
-        qrImg.style.webkitTouchCallout = 'none';
-        qrImg.style.webkitUserSelect = 'none';
-        qrImg.style.userSelect = 'none';
-        qrImg.style.webkitTapHighlightColor = 'transparent';
+        img.style.webkitTouchCallout = 'none';
+        img.style.webkitUserSelect = 'none';
+        img.style.userSelect = 'none';
+        img.style.webkitTapHighlightColor = 'transparent';
         
-        qrImg.onload = function() {
-            console.log('Google Charts QR code loaded successfully');
-            console.log('Image dimensions:', qrImg.naturalWidth + 'x' + qrImg.naturalHeight);
+        img.onload = function() {
+            console.log('Real QR code loaded successfully');
         };
         
-        qrImg.onerror = function() {
-            console.error('Failed to load Google Charts QR code');
-            // Fallback: show text instead
-            qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
-        };
+        img.src = canvas.toDataURL('image/png');
+        qrContainer.appendChild(img);
         
-        qrImg.src = qrApiUrl;
-        qrContainer.appendChild(qrImg);
-        
-        console.log('Google Charts QR code created');
+        console.log('Real QR code generated with Reed-Solomon error correction');
     } catch (error) {
-        console.error('Error generating QR code:', error);
+        console.error('Error generating real QR code:', error);
         // Fallback: show placeholder
         qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
     }
