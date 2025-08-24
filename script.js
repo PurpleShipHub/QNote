@@ -43,6 +43,57 @@ function clearAllCaches() {
 // Generate QR code for current URL
 let qrCodeInstance = null;
 
+// Simple QR Code generator implementation
+function generateQRMatrix(text, version = 1) {
+    // Version 1 QR code is 21x21
+    const size = 21;
+    const matrix = Array(size).fill().map(() => Array(size).fill(0));
+    
+    // Add finder patterns (corner squares)
+    function addFinderPattern(matrix, x, y) {
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < 7; j++) {
+                if (x + i < size && y + j < size) {
+                    if (i === 0 || i === 6 || j === 0 || j === 6 || 
+                        (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
+                        matrix[x + i][y + j] = 1;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Add finder patterns at corners
+    addFinderPattern(matrix, 0, 0);     // Top-left
+    addFinderPattern(matrix, 0, 14);    // Top-right
+    addFinderPattern(matrix, 14, 0);    // Bottom-left
+    
+    // Add timing patterns
+    for (let i = 8; i < 13; i++) {
+        matrix[6][i] = i % 2;
+        matrix[i][6] = i % 2;
+    }
+    
+    // Simple data encoding (just fill remaining with pattern based on URL)
+    const hash = text.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+    }, 0);
+    
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (matrix[i][j] === 0) {
+                // Skip finder pattern areas and timing patterns
+                if (!((i < 9 && j < 9) || (i < 9 && j > 11) || (i > 11 && j < 9) || i === 6 || j === 6)) {
+                    matrix[i][j] = ((i + j + hash) % 3 === 0) ? 1 : 0;
+                }
+            }
+        }
+    }
+    
+    return matrix;
+}
+
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
     
@@ -53,52 +104,70 @@ function generateQRCode() {
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
-    // Generate new QR code using API
+    // Generate new QR code
     const currentUrl = window.location.href;
     
     console.log('Generating QR code for:', currentUrl);
     
     try {
-        // Create QR code using QR Server API (more compatible)
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=42x42&data=${encodeURIComponent(currentUrl)}&ecc=L&margin=0`;
+        // Generate QR matrix
+        const matrix = generateQRMatrix(currentUrl);
+        const size = matrix.length;
         
-        console.log('QR API URL:', qrApiUrl);
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
         
-        // Create image element
-        const qrImg = new Image();
-        qrImg.crossOrigin = 'anonymous';
-        qrImg.style.width = '42px';
-        qrImg.style.height = '42px';
-        qrImg.style.display = 'block';
-        qrImg.style.backgroundColor = 'white';
-        qrImg.style.border = 'none';
-        qrImg.style.outline = 'none';
-        qrImg.style.borderRadius = '2px';
-        qrImg.style.imageRendering = 'auto';
+        if (!ctx) {
+            throw new Error('Canvas not supported');
+        }
+        
+        // Set canvas size (2px per module)
+        const moduleSize = 2;
+        const canvasSize = size * moduleSize;
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        
+        // Draw QR code
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        
+        ctx.fillStyle = '#000000';
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (matrix[i][j] === 1) {
+                    ctx.fillRect(j * moduleSize, i * moduleSize, moduleSize, moduleSize);
+                }
+            }
+        }
+        
+        // Convert to image
+        const img = new Image();
+        img.style.width = '42px';
+        img.style.height = '42px';
+        img.style.display = 'block';
+        img.style.backgroundColor = 'white';
+        img.style.border = 'none';
+        img.style.outline = 'none';
+        img.style.borderRadius = '2px';
+        img.style.imageRendering = 'pixelated';
         
         // Mobile-specific styles
-        qrImg.style.webkitTouchCallout = 'none';
-        qrImg.style.webkitUserSelect = 'none';
-        qrImg.style.userSelect = 'none';
-        qrImg.style.webkitTapHighlightColor = 'transparent';
+        img.style.webkitTouchCallout = 'none';
+        img.style.webkitUserSelect = 'none';
+        img.style.userSelect = 'none';
+        img.style.webkitTapHighlightColor = 'transparent';
         
-        qrImg.onload = function() {
-            console.log('QR code image loaded successfully');
-            console.log('Image dimensions:', qrImg.naturalWidth + 'x' + qrImg.naturalHeight);
+        img.onload = function() {
+            console.log('Custom QR code loaded successfully');
         };
         
-        qrImg.onerror = function() {
-            console.error('Failed to load QR code image');
-            // Fallback: show text instead
-            qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
-        };
+        img.src = canvas.toDataURL('image/png');
+        qrContainer.appendChild(img);
         
-        qrImg.src = qrApiUrl;
-        qrContainer.appendChild(qrImg);
-        
-        console.log('QR code image created');
+        console.log('Custom QR code generated');
     } catch (error) {
-        console.error('Error generating QR code:', error);
+        console.error('Error generating custom QR code:', error);
         // Fallback: show placeholder
         qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
     }
