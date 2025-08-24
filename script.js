@@ -52,6 +52,11 @@ function generateQRCode() {
         return;
     }
     
+    // Log browser info for debugging
+    console.log('User Agent:', navigator.userAgent);
+    console.log('Canvas support:', !!document.createElement('canvas').getContext);
+    console.log('Is Android:', /Android/i.test(navigator.userAgent));
+    
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
@@ -87,28 +92,53 @@ function generateQRCode() {
                 
                 // Function to crop to 41x41 from top-left
                 const cropImage = () => {
-                    // Create canvas to crop the image
-                    const cropCanvas = document.createElement('canvas');
-                    const ctx = cropCanvas.getContext('2d');
-                    cropCanvas.width = 41;
-                    cropCanvas.height = 41;
-                    
-                    // Draw only the top-left 41x41 portion of the image
-                    ctx.drawImage(img, 0, 0, 41, 41, 0, 0, 41, 41);
-                    
-                    // Create a new image element with the cropped content
-                    const croppedImg = new Image();
-                    croppedImg.style.width = '41px';
-                    croppedImg.style.height = '41px';
-                    croppedImg.style.imageRendering = 'pixelated';
-                    croppedImg.style.imageRendering = '-moz-crisp-edges';
-                    croppedImg.style.imageRendering = 'crisp-edges';
-                    croppedImg.src = cropCanvas.toDataURL('image/png');
-                    
-                    // Replace the original image with the cropped one
-                    img.parentNode.replaceChild(croppedImg, img);
-                    
-                    console.log('QR Code cropped to 41x41 from top-left');
+                    try {
+                        // Create canvas to crop the image
+                        const cropCanvas = document.createElement('canvas');
+                        const ctx = cropCanvas.getContext('2d');
+                        
+                        if (!ctx) {
+                            console.error('Canvas context not available');
+                            return;
+                        }
+                        
+                        cropCanvas.width = 41;
+                        cropCanvas.height = 41;
+                        
+                        // Draw only the top-left 41x41 portion of the image
+                        ctx.drawImage(img, 0, 0, 41, 41, 0, 0, 41, 41);
+                        
+                        // Create a new image element with the cropped content
+                        const croppedImg = new Image();
+                        croppedImg.style.width = '41px';
+                        croppedImg.style.height = '41px';
+                        croppedImg.style.imageRendering = 'pixelated';
+                        croppedImg.style.imageRendering = '-moz-crisp-edges';
+                        croppedImg.style.imageRendering = 'crisp-edges';
+                        croppedImg.style.imageRendering = '-webkit-crisp-edges';
+                        croppedImg.style.imageRendering = '-o-crisp-edges';
+                        croppedImg.style.msInterpolationMode = 'nearest-neighbor';
+                        
+                        // Add mobile-specific styles
+                        croppedImg.style.display = 'block';
+                        croppedImg.style.border = 'none';
+                        croppedImg.style.outline = 'none';
+                        croppedImg.style.webkitTouchCallout = 'none';
+                        croppedImg.style.webkitUserSelect = 'none';
+                        croppedImg.style.userSelect = 'none';
+                        
+                        croppedImg.src = cropCanvas.toDataURL('image/png');
+                        
+                        // Replace the original image with the cropped one
+                        img.parentNode.replaceChild(croppedImg, img);
+                        
+                        console.log('QR Code cropped to 41x41 from top-left');
+                    } catch (error) {
+                        console.error('Error cropping QR code:', error);
+                        // Fallback: just resize the original image
+                        img.style.width = '41px';
+                        img.style.height = '41px';
+                    }
                 };
                 
                 // Try to crop immediately if image is already loaded
