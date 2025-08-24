@@ -312,73 +312,123 @@ class QRCode {
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
     
+    // Log detailed browser info
+    console.log('=== QR Code Generation Debug ===');
+    console.log('User Agent:', navigator.userAgent);
+    console.log('Platform:', navigator.platform);
+    console.log('Is iOS:', /iPad|iPhone|iPod/.test(navigator.userAgent));
+    console.log('Is Android:', /Android/i.test(navigator.userAgent));
+    console.log('Canvas support:', !!document.createElement('canvas').getContext);
+    
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
     const currentUrl = window.location.href;
     console.log('Generating real QR code for:', currentUrl);
+    console.log('URL length:', currentUrl.length);
     
+    // Force use new QR implementation for ALL browsers
     try {
+        console.log('Starting QR code generation...');
+        
+        // Test canvas support first
+        const testCanvas = document.createElement('canvas');
+        const testCtx = testCanvas.getContext('2d');
+        if (!testCtx) {
+            throw new Error('Canvas context not available');
+        }
+        console.log('Canvas context available');
+        
         // Generate QR code matrix
+        console.log('Creating QRCode instance...');
         const qr = new QRCode();
+        console.log('QRCode instance created');
+        
+        console.log('Generating matrix...');
         const matrix = qr.generate(currentUrl);
+        console.log('Matrix generated, size:', matrix.length + 'x' + matrix[0].length);
         
         // Create canvas
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
-        if (!ctx) {
-            throw new Error('Canvas not supported');
-        }
         
         // Set canvas size (2px per module for 42x42 total)
         const moduleSize = 2;
         const canvasSize = matrix.length * moduleSize;
         canvas.width = canvasSize;
         canvas.height = canvasSize;
+        console.log('Canvas size set to:', canvasSize + 'x' + canvasSize);
         
         // Draw QR code
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvasSize, canvasSize);
         
         ctx.fillStyle = '#000000';
+        let blackModules = 0;
         for (let y = 0; y < matrix.length; y++) {
             for (let x = 0; x < matrix[y].length; x++) {
                 if (matrix[y][x]) {
                     ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+                    blackModules++;
                 }
             }
         }
+        console.log('Drew', blackModules, 'black modules');
         
         // Convert to image
         const img = new Image();
-        img.style.width = '42px';
-        img.style.height = '42px';
-        img.style.display = 'block';
-        img.style.backgroundColor = 'white';
-        img.style.border = 'none';
-        img.style.outline = 'none';
-        img.style.borderRadius = '2px';
-        img.style.imageRendering = 'pixelated';
         
-        // Mobile-specific styles
-        img.style.webkitTouchCallout = 'none';
-        img.style.webkitUserSelect = 'none';
-        img.style.userSelect = 'none';
-        img.style.webkitTapHighlightColor = 'transparent';
+        // Force consistent styling for all platforms
+        img.style.cssText = `
+            width: 42px !important;
+            height: 42px !important;
+            display: block !important;
+            background-color: white !important;
+            border: none !important;
+            outline: none !important;
+            border-radius: 2px !important;
+            image-rendering: pixelated !important;
+            image-rendering: -moz-crisp-edges !important;
+            image-rendering: crisp-edges !important;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            object-fit: contain !important;
+            max-width: 42px !important;
+            max-height: 42px !important;
+        `;
         
         img.onload = function() {
-            console.log('Real QR code loaded successfully');
+            console.log('QR code image loaded successfully');
+            console.log('Image natural size:', img.naturalWidth + 'x' + img.naturalHeight);
         };
         
-        img.src = canvas.toDataURL('image/png');
+        img.onerror = function(e) {
+            console.error('QR code image failed to load:', e);
+            showFallback();
+        };
+        
+        console.log('Converting canvas to data URL...');
+        const dataUrl = canvas.toDataURL('image/png');
+        console.log('Data URL length:', dataUrl.length);
+        console.log('Data URL prefix:', dataUrl.substring(0, 50));
+        
+        img.src = dataUrl;
         qrContainer.appendChild(img);
         
-        console.log('Real QR code generated with Reed-Solomon error correction');
+        console.log('QR code generation completed successfully');
+        return; // Success - exit function
+        
     } catch (error) {
-        console.error('Error generating real QR code:', error);
-        // Fallback: show placeholder
-        qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;">QR</div>';
+        console.error('Error in QR code generation:', error);
+        console.error('Error stack:', error.stack);
+        showFallback();
+    }
+    
+    function showFallback() {
+        console.log('Showing fallback QR placeholder');
+        qrContainer.innerHTML = '<div style="width:42px;height:42px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px;color:#666;">QR</div>';
     }
 }
 
