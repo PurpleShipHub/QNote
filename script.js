@@ -75,31 +75,70 @@ function generateQRCode() {
     try {
         console.log('Using QRious library...');
         
-        // Create QR code using QRious - adjust size for mobile
-        const isMobile = window.innerWidth <= 768;
-        const qrSize = isMobile ? 36 : 42;
+        // QRious generates 25x25 QR codes, so we use that size
+        const qrSize = 25;
         
-        const qr = new QRious({
-            value: currentUrl,
-            size: qrSize,
-            level: 'M', // Medium error correction
-            background: '#ffffff',
-            foreground: '#000000',
-            padding: 0
-        });
+        // Try different approaches to get exact size
+        let qr;
+        try {
+            qr = new QRious({
+                value: currentUrl,
+                size: qrSize,
+                level: 'L', // Low error correction for smaller size
+                background: '#ffffff',
+                foreground: '#000000',
+                padding: 0 // No padding
+            });
+        } catch (e) {
+            console.log('First attempt failed, trying with medium error correction:', e);
+            qr = new QRious({
+                value: currentUrl,
+                size: qrSize,
+                level: 'M', // Medium error correction
+                background: '#ffffff',
+                foreground: '#000000',
+                padding: 0
+            });
+        }
         
-        console.log('QRious options set');
+        console.log('QRious options set, size:', qrSize);
         
         // Get the canvas element from QRious
         const canvas = qr.canvas;
         console.log('QR code generated to canvas successfully');
         console.log('Canvas size:', canvas.width + 'x' + canvas.height);
+        console.log('Actual QR size should be:', qrSize + 'x' + qrSize);
+        
+        // Check if canvas size matches expected size and fix if needed
+        let finalCanvas = canvas;
+        if (canvas.width !== qrSize || canvas.height !== qrSize) {
+            console.warn('Canvas size mismatch! Expected:', qrSize, 'Got:', canvas.width + 'x' + canvas.height);
+            console.log('Creating new canvas with exact size...');
+            
+            // Create new canvas with exact size
+            finalCanvas = document.createElement('canvas');
+            finalCanvas.width = qrSize;
+            finalCanvas.height = qrSize;
+            const ctx = finalCanvas.getContext('2d');
+            
+            // Fill with white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, qrSize, qrSize);
+            
+            // Scale the QR code to fill the entire canvas
+            // This will stretch 25x25 to 42x42 (or 36x36 on mobile)
+            ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, qrSize, qrSize);
+            
+            console.log('QR code scaled from', canvas.width + 'x' + canvas.height, 'to', qrSize + 'x' + qrSize);
+            
+            console.log('New canvas created with size:', finalCanvas.width + 'x' + finalCanvas.height);
+        }
         
         // Create image from canvas
         const img = new Image();
         
-        // Mobile-friendly styling with responsive size
-        const imgSize = isMobile ? '36px' : '42px';
+        // Use 25px to match QR code size
+        const imgSize = '25px';
         img.style.cssText = `
             width: ${imgSize} !important;
             height: ${imgSize} !important;
@@ -134,9 +173,9 @@ function generateQRCode() {
             showFallback();
         };
         
-        try {
-            // Convert canvas to data URL with error handling
-            const dataUrl = canvas.toDataURL('image/png');
+                    try {
+                // Convert final canvas to data URL with error handling
+                const dataUrl = finalCanvas.toDataURL('image/png');
             console.log('Data URL created, length:', dataUrl.length);
             
             if (!dataUrl || dataUrl.length < 100) {
