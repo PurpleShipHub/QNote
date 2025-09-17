@@ -1,9 +1,1 @@
-# Asks For Input
-
-num1 = int(input("Please Enter Your First Number="))
-num2 = int(input("Please Enter Your Second Number="))
-# Prints The Answers
-print("Sum is", num1 + num2)
-print("Difference is", num1 - num2)
-print("Product is", num1 * num2)
-print("Quotient", num1 / num2)
+nawa jaaaaa
