@@ -1,6 +1,0 @@
-1. note chỉ có text
-2. public => chỉ cần đúng mã pin là ai cũng xem được 
-3. chỉ có web page
-4. ẩn danh
-budget 10-20tr => như giai đoạn đầu của thread, chưa cần đến retention 
-5. ai cũng sửa dc như wiki mở
