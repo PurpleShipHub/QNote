@@ -1,6 +1,1 @@
-user = input("What is your username? ")
-
-if user == "Mandvi":
-    print("Welcome", user)
-else:
-    print(user, "Maaf kar")
+fxfsfsdfsfsfsfs
