@@ -1,7 +1,1 @@
-⚠️  Website Blocked
-
-Access to this website has been restricted by your administrator.
-If you believe this is an error, please contact your Network Administrator.
-
-Website: www.msbkarachi.edu.pk
-Reason: Policy Violation
+give a python compiler code for for loop pythonand while loop
