@@ -1,3 +1,9 @@
+Question 1
+What is the primary function of a loop in the Python programming language, and how does it enhance computational efficiency? 
+Answer: The primary function of a loop in Python is to execute a block of code repeatedly based on a specified condition, thereby automating repetitive tasks. This enhances computational efficiency by reducing the need for manual code replication, allowing beginners to process large datasets with minimal effort.
+Question 2
+How does a FOR loop differ from manually repeating a set of instructions in a program?
+ Answer: A FOR loop automates the iteration over a predefined sequence of elements, executing code a predetermined number of times, whereas manual repetition requires explicit coding for each iteration. For new programmers, this distinction simplifies the creation of structured, error-free code for repetitive operations.
 Question 3
 What role does the step parameter play in the range() function within a FOR loop, and how can it modify the iteration process? 
 Answer: The step parameter in the range() function determines the increment or decrement between consecutive values during iteration, with a default value of 1. It allows beginners to customize the sequence
