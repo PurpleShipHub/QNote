@@ -1,0 +1,20 @@
+# Accept a number from the user (can be float)
+n = float(input("Enter a number: "))
+
+# Convert to integer (consider only first N natural numbers)
+n_int = int(n)
+
+# Initialize sums
+sum_even = 0
+sum_odd = 0
+
+# Loop through numbers from 1 to n_int
+for i in range(1, n_int + 1):
+    if i % 2 == 0:
+        sum_even += i
+    else:
+        sum_odd += i
+
+# Print results
+print("Sum of even numbers:", sum_even)
+print("Sum of odd numbers:", sum_odd)
