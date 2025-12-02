@@ -1,1 +1,20 @@
-Tahir ICT : Tamne Masool Camera ma si dekhi ya che
+# Asks The User For Number
+n = int(input("Enter Your Number To Calculate Sum : "))
+
+# Defines Even And Odd Variables
+
+even = 0
+odd = 0
+
+# Checks For Even & Odd And Then Calculates The Sum
+
+for i in range(1, n):
+    if (i % 2 == 0):
+        even += i
+    else:
+        odd += i
+        
+# Gives The Result To User 
+        
+print("The sum of first even",n,"numbers is", even)
+print("The sum of first odd",n,"numbers is", odd)
