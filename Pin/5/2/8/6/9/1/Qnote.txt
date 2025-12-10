@@ -1,0 +1,469 @@
+PHYSICAL THERAPY INITIAL EVALUATION
+
+DEMOGRAPHIC DATA
+
+Name: Espejo, M. J. 
+Address:  Caloocan, Quezon City
+Age/Gender: 67 / Male
+Occupation:  Retired
+Referring Unit:  Coronary Care Unit (EAC Memorial Medical Center)
+Referring MD: Marina Benipayo MD
+Date of Referral: December 7, 2020
+Date of Initial Evaluation: December 7, 2020
+Medical Diagnosis: s/p coronary artery bypass graft
+
+
+SUBJECTIVE
+Chief Complaint: Patient complains of pain on chest suture site especially when coughing (described as “parang napupunit ang dibdib”); VRS 7/10 on coughing, 2/10 at rest.
+
+
+Goals and Attitude Towards Therapy: Patient hopes to return to driving and his usual hobbies such as carpentry, attending to pet fish and pet dog and gardening; and that he will no longer be bothered by pain on his chest suture site.
+ 
+History of Present Illness: (informant: Mr. M. J. E.; reliability: good)
+
+	4 weeks prior to IE, patient was brought to the Emergency Room of Emilio Aguinaldo College Medical Center due to complaints of “massive chest pain”.  Electrocardiography and other blood tests revealed an ongoing heart attack of the unstable angina kind (see Ancillary Procedures). Patient was transferred to the Coronary Care Unit for management and monitoring of the condition. Echocardiography done two days after admission revealed below normal ejection fraction.  Patient was subsequently referred for angiography.  This was done 4 days after admission, and revealed occlusion of coronary circulation at 6 sites. Patient was scheduled for coronary artery bypass graft surgery (CABG), having to wait for the availability of the surgeons and the operating room.  One week after admission, when patient was already ambulatory and without any more attachments, patient was discharged.
+
+	Two weeks after the initial admission, patient was readmitted at the Emilio Aguinaldo College Medical Center for his scheduled CABG.  Quadruple bypass was done. Patient stayed in the Surgical Intensive Care Unit for 2 days and was transferred to the Cardiac Surgery Ward after.  Patient was then referred to PT for Phase I of Comprehensive Cardiac Rehabilitation Program, which consisted of ROM exercises, ankle pumps, incentive spirometry and ambulation within ward as tolerated.  
+
+	Patient was discharged 1 week post-CABG and referred for Phase II of Comprehensive Cardiac Rehabilitation Program.  One week after discharge, patient reported to the Department of Rehabilitation Medicine to begin Phase II of the cardiac rehabilitation program.
+ 
+Past Medical History: 
+(+) myocardial infarction – 1988
+Hypertensive, controlled – until prior to CABG
+
+Family Medical History:
+HTN - father
+
+Personal/Social History:
+Patient writes with the right hand but uses the left hand for manual labor
+Patient is active at home but does not have regular aerobic activities/exercises
+Patient finds relaxation doing the following: gardening, walking the dog around the village (about 2 km) and feeding the fish and cleaning the aquarium
+Patient does some home improvement projects as a hobby
+Patient lives in a 2-storey house, with a 15-step staircase.  He lives with his wife and two children.  His bedroom is on the second floor.  Toilet and bath are in his bedroom, ~ 10 steps from the bed  
+Patient used to smoke 60 pack-years (stopped 1984), non-alcoholic beverage drinker
+
+
+Ancillary Procedures
+
+Test
+Date
+Significant Findings
+ECG
+23 October 2020
+ST depression; arrhythmia
+Chest x-ray
+23 October 2020
+Normal
+CPK
+23 October 2020
+Normal
+Lipid profile
+23 October 2020
+Elevated triglycerides
+Troponin T
+23 October 2020
+Normal
+Echocardiography
+23 October 2020
+LV ejection fraction 33%
+
+
+Treadmill Stress Test: Using the Bruce protocol, the patient was able to tolerate 4 METS. Pt. exercised for 8 minutes reaching a target heart rate of 128 beats per minute. Ten minutes into exercise, his ST segments began elevating in the inferior leads. He therefore had an acute inferior infarct. His stress test was stopped. He complained of vague chest pain. 
+
+Medications
+
+Medicine
+Indications
+Lipitor 40mg
+Cholesterol-lowering medication
+Aldazide 25mg
+Diuretic
+Plavix 75mg
+Anticoagulant
+Therabloc 50mg
+Beta blocker
+Isoptin 240mg
+Calcium channel blocker
+Cordarone 200mg
+Antiarrhythmic medication
+Omeprazole 20mg
+Anti-acid (gastrointestinal)
+Aspilets 80mg
+Anticoagulant
+Coversyl 4mg
+ACE inhibitor
+
+
+
+OBJECTIVE
+
+Vital Signs
+Before IE
+During IE
+After IE
+Blood pressure
+130/80 mmHg
+130/80 mmHg
+130/80 mmHg
+Heart rate
+70 bpm
+78 bpm
+76 bpm
+Respiratory rate
+24 cpm
+30 cpm
+26 cpm
+Temperature
+37 degrees Celsius
+37 degrees Celsius
+37 degrees Celsius
+
+
+Ocular Inspection
+Ectomorph
+Ambulatory
+(+) kyphotic 
+(+) dry sutures:
+7.5 inches on sternum
+8 inches on medial side of (L) LE
+(+) swelling on (L) leg (see Anthropometric measurement)
+(-) gross deformities
+
+Palpation
+Normothermic on all exposed body parts
+(+) Grade 2 pitting edema of (L) lower extremity
+
+Pulmonary Assessment Findings:
+
+Breathing Assessment:
+Apical, asymmetric over the upper chest, tachypneic, shallow depth, regular rhythm
+
+Coughing Assessment:
+Dry, occasionally effective, strong and productive
+
+Sputum Assessment:
+Sputum: clear, half cup a day 
+Color: Clear, white
+Odor: Odorless
+Amount: Half cup a day
+Texture: Thin, mucoid, frothy
+
+Auscultation: 
+Normal breath sounds on all lung segments except
+(+) Crackles , low pitched, biphasic, over the superior and inferior lingual, and middle lobe
+
+Sig:  
+
+Decreased breath sound on anterior basal lower lobe
+(+) Crackles , low pitched, monophasic, latter half of inspiration over anterior basal lower lobe
+
+Sig:  
+
+Fremitus: Normal fremitus on all lung fields except:
+Increased fremitus over (B) anterior basal lower lobe, middle lobe and lingula
+
+Sig:  
+
+Percussion:  Resonant on all lung fields except:
+Dull sound over (B) anterior basal lower lobe, middle lobe and lingual
+
+Sig:  
+
+
+
+Manual Muscle Testing
+BUE and BLE muscle group were grossly graded 5/5 except:
+
+Muscle Group
+Grade
+Muscle Group
+Grade
+(L) shoulder flexors
+3/5
+(L) hip flexors
+4/5
+(L) shoulder abductors 
+3/5
+(L) hip extensors
+3/5
+(L) elbow flexors
+4/5
+(L) hip abductors
+4/5
+(L) elbow extensors
+3/5
+(L) hip adductors 
+3/5
+
+
+
+
+(L) external rotators
+3/5
+
+
+
+
+(L) internal rotators
+3/5
+
+
+
+
+(L) knee extensors
+4/5
+
+
+
+
+(L) knee flexors
+4/5
+
+ 
+Findings:  
+Sig. 	
+
+Endurance
+6 Minute Walk Test:  pt. was able to finish the test (~300m.) with 2 rest periods of ~1.0 min each
+
+TIME
+SaO2
+HR
+RPE
+0 min
+99%
+72 bpm
+4/10
+1 min
+99%
+76 bpm
+4/10
+2 mins
+98%
+78 bpm
+5/10
+3 mins
+98%
+76 bpm
+5/10
+4 mins
+97%
+78 bpm
+7/10
+5 mins
+97%
+80 bpm
+7/10
+6 mins
+95%
+78 bpm
+8/10
+
+
+
+Findings: 
+Sig:   
+
+Anthropometric Measurement:
+Limb Girth Measurement
+
+Landmark
+Right LE
+Left LE
+Difference
+8 inches above the knee
+23 cm
+25 cm
+2 cm
+6 inches above the knee
+23 cm
+26 cm
+3 cm
+4 inches above the knee
+23 cm
+26 cm
+3 cm
+2 inches above the knee 
+22 cm
+25.5 cm
+3.5 cm
+Knee joint line
+21 cm
+24.5 cm
+3.5 cm
+2 inches below the knee
+22 cm
+25 cm
+3 cm
+4 inches below the knee
+22 cm
+25 cm
+3 cm
+6 inches below the knee 
+22 cm
+25 cm
+3 cm
+8 inches below the knee
+22 cm
+24 cm
+2 cm
+
+Findings: 
+Sig:  
+
+Postural Assessment:
+
+All landmarks in anterior, posterior and lateral views are level and WNL except:
+(+) kyphosis
+(B) rounded shoulders 
+increased cervical flexion
+
+Sig:  
+
+
+ADL Assessment
+Barthel Index 
+Activities
+Score
+FEEDING
+10
+BATHING
+5
+GROOMING
+5
+DRESSING
+10
+BOWELS
+10
+BLADDER
+10
+TOILET USE
+10
+TRANSFERS
+10
+MOBILITY 
+15
+STAIRS
+5
+TOTAL
+90/100
+
+
+Sig:  
+Descriptive ADL Analysis:
+
+Activity
+Current performance status
+Basic ADLs
+Independent without difficulty in all basic ADLs except limitation in mobility
+Instrumental ADL:
+
+
+Inability to do daily chores like buying newspaper, taking dog for a walk, feeding fish, driving, going to the market 
+Inability to do carpentry and cleaning of aquarium (weekly task)
+Bed mobility
+Able to do all antigravity movements using any extremity within full range, limited repetitions 
+Able to perform independent bed mobility with noted slowness in movements (performed ~5-7 secs)
+Transfer
+Able to move from bed to chair and back with noted slowness in movements (performed ~8-10 secs)
+Mobility: Walking
+Ambulatory without aids and assist indoors and outdoors, level surfaces, showing normal gait pattern, except for decreased gait speed; 0.3 km on the 6min walk test, modified Borg RPE = 8
+Mobility: Stairclimbing
+Stair climbing limited to maximum of 3x/day, to prevent overexertion 
+Noted slowness in movement (25-30 seconds to ascend a 15-flight staircase) 
+
+Sig: 
+
+
+
+ASSESSMENT
+
+Refined Problem List
+
+Impairments
+Activity Limitations
+Participation Restrictions
+PIPs
+
+
+Pneumonia (crackles, dull percussion, decreased breath sounds)
+
+
+Reduced activity tolerance, SOB, fatigue, inability to perform moderate to vigorous ADLs, limited stair climbing, difficulty. Inability to do carpentry and cleaning of aquarium
+Inability to do daily chores like buying newspaper, taking dog for a walk, feeding fish, driving, going to the market 
+
+
+NPIPs
+
+
+
+
+
+LLE edema (DVT risk), decreased gait speed.
+
+ Weakness of L UE and L LE
+
+
+
+Limited prolonged standing and walking leg discomfort or swelling
+
+Difficulty with stair climbing and ambulation on inclines
+
+
+Limited performance role as a father
+
+
+Prioritized problem list
+Cardiopulmonary impairment
+Slowness of movement Functional mobility limitations.
+Inability to perform IADLs.
+
+
+Anticipated Problems 
+
+Anticipated Problems
+Justification
+Predictive Criteria
+Increase fatigue during ADLs
+Pneumonia / Atelectasis
+DVT Risk
+
+Postural Deficit
+
+
+Deconditioning post-CABG
+Secretions and shallow breathing
+LE edema and decrease mobility
+
+Kyphosis
+6MWT and RPE 8/10
+Crackles, dull percussion, increase fremitus
+Increase swelling, pain, warmth; Hofman’s Test
+Neck pain; Cervical LROM
+
+PT Diagnosis
+
+
+
+Prognosis
+
+Positive Prognosticating Factors
+Significance; Implications to Rehab
+ 
+Negative  Prognosticating Factors
+Significance; Implications to Rehab
+
+
+Goals
+Short-term:
+
+
+Long-term:
+
+PLAN
+PT Management
+
+Strategies
+Tactics
+Strengthening of L UE and L LE
+Resist
