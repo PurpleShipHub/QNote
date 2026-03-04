@@ -1,0 +1,49 @@
+Chapter: Troubleshooting 						Pg: 174
+
+1. Give a brief explanation of troubleshooting.
+Troubleshooting is the identification of trouble in a system caused by a failure of some kind. The problem is initially described as symptoms of malfunction and troubleshooting is the process of determining the causes of these symptoms. You can also say that troubleshooting is a process of identifying a computer problem so that it can be fixed
+2. Why is it important to take proper care of a computer?
+It is important to take proper care of your computer for the following reasons. 
+• It will increase the speed and the life of your PC. 
+• It prevents errors. 
+• It secures your data and information from any unwanted damages. 
+• Lastly, it saves your precious time
+3. What are the areas to troubleshoot?
+The three areas to troubleshoot are Hardware, Software and Operating system.
+4. Write about two common problems related to software that you might have experienced.
+Two commonly faced problems related to the software can be: 
+a. You are unable to install a program.
+b. Program or utility does not load. It has an error when you attempt to load it.
+5. Give troubleshooting steps for an error message displayed on the monitor.
+If any error message is displayed on your monitor screen, you must reboot it, that is, restart your computer. A majority of problems that occur while you are using your computer can be fixed by rebooting.
+
+
+Question D:
+1. Windows stops responding.
+Operating system
+2. The system crashes when you are working with a specific software.
+Software
+3. Power failure in the computer.
+Hardware
+4. You are unable to install a program.
+Software
+5. Windows restarts without warning.
+Operating system
+6. Windows starts in a safe mode.
+Operating system
+
+Question B:
+True and False	Question C: 
+Fill in the Blanks
+1. True 
+2. False 
+3. True 
+4. False 
+5. True	1.	Disk Cleanup 
+2.	Rebooting 
+3.	Self test 
+4.	hardware 
+5.	Tools tab of Properties     dialog box
+
+
+
