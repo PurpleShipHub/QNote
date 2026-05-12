@@ -1,0 +1,64 @@
+Code 1 Question 1
+
+
+# Menu Driven Program
+
+print("Menu")
+print("1. Print numbers from 1 to 5 using for loop")
+print("2. Print numbers from 1 to 5 using while loop")
+print("3. Display day name using match-case")
+
+choice = int(input("Enter your choice: "))
+
+# Option 1
+if choice == 1:
+    for i in range(1, 6):
+        print(i)
+
+# Option 2
+elif choice == 2:
+    i = 1
+    while i <= 5:
+        print(i)
+        i += 1
+
+# Option 3
+elif choice == 3:
+    day = int(input("Enter day number (1-7): "))
+
+    match day:
+        case 1:
+            print("Monday")
+        case 2:
+            print("Tuesday")
+        case 3:
+            print("Wednesday")
+        case 4:
+            print("Thursday")
+        case 5:
+            print("Friday")
+        case 6:
+            print("Saturday")
+        case 7:
+            print("Sunday")
+        case _:
+            print("Invalid Day")
+
+else:
+    print("Invalid Choice")
+
+Code 2 Question 2
+
+# Program using simulated do-while loop
+
+while True:
+    num = int(input("Enter a number (0 to stop): "))
+
+    if num == 0:
+        print("Program Stopped")
+        break
+
+    if num % 2 == 0:
+        print("Even Number")
+    else:
+        print("Odd Number")
