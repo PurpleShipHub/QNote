@@ -1,0 +1,133 @@
+hyperview 에서 loadcases 의 고응력 부를 빠르게 뽑는 방법
+
+import os
+import csv
+import heapq
+
+import hw
+import hw.hv as hv
+
+
+def _safe_name(text):
+    return str(text).replace("/", "_").replace("\\", "_").replace(":", "_").replace(" ", "_")
+
+
+def get_high_stress_from_h3d(
+    h3d_path,
+    out_csv_path,
+    result_type="Element Stresses (2D & 3D)",
+    component="vonMises",
+    top_n=10,
+):
+    """
+    H3D 내 모든 loadcase / simulation step 에 대해 high stress Top N 추출.
+
+    주의:
+    - HyperView Python 환경에서 실행해야 함.
+    - H3D 바이너리를 직접 파싱하지 않고 HyperView Result API를 사용함.
+    """
+
+    if not os.path.exists(h3d_path):
+        raise FileNotFoundError(h3d_path)
+
+    sess = hw.Session()
+    page = sess.get(hw.Page)
+    win = page.get(hw.Window)
+
+    model = win.get(hv.Model)
+    model.loadResult(h3d_path)
+
+    result = model.get(hv.Result)
+
+    loadcases = result.getLoadcaseList()
+
+    rows = []
+
+    for lc in loadcases:
+        result.setCurrentLoadcase(lc)
+
+        simulations = result.getSimulationList()
+
+        for sim in simulations:
+            result.setCurrentSimulation(sim)
+
+            scalar_def = hv.ResultDefinitionScalar(
+                data_type=result_type,
+                data_component=component,
+                layer="Max",
+            )
+
+            scalar_result = result.getScalarResult(scalar_def)
+
+            # element id 목록
+            elem_ids = scalar_result.getEntityIds()
+
+            # Top N만 유지 → 전체 정렬보다 빠름
+            heap = []
+
+            for elem_id in elem_ids:
+                try:
+                    val = scalar_result.getValue(elem_id)
+                except Exception:
+                    continue
+
+                if val is None:
+                    continue
+
+                item = (float(val), elem_id)
+
+                if len(heap) < top_n:
+                    heapq.heappush(heap, item)
+                else:
+                    if item[0] > heap[0][0]:
+                        heapq.heapreplace(heap, item)
+
+            top_items = sorted(heap, reverse=True)
+
+            for rank, item in enumerate(top_items, start=1):
+                stress_val, elem_id = item
+
+                rows.append({
+                    "loadcase": str(lc),
+                    "simulation": str(sim),
+                    "rank": rank,
+                    "element_id": elem_id,
+                    "stress": stress_val,
+                    "result_type": result_type,
+                    "component": component,
+                })
+
+            print("[OK]", lc, sim, "top", len(top_items))
+
+    with open(out_csv_path, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "loadcase",
+                "simulation",
+                "rank",
+                "element_id",
+                "stress",
+                "result_type",
+                "component",
+            ],
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print("Saved:", out_csv_path)
+
+    return rows
+
+
+if __name__ == "__main__":
+    h3d_path = r"D:\test\result.h3d"
+    out_csv_path = r"D:\test\high_stress_summary.csv"
+
+    get_high_stress_from_h3d(
+        h3d_path=h3d_path,
+        out_csv_path=out_csv_path,
+        result_type="Element Stresses (2D & 3D)",
+        component="vonMises",
+        top_n=10,
+    )
